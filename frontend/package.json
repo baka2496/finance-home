@@ -8,7 +8,7 @@
     "build": "tsc --noEmit -p tsconfig.app.json && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "deploy": "cd .. && netlify deploy --build --prod --site cca70148-bd53-45bd-adff-f048f2cd24cf && cd frontend && node scripts/verify-deploy.mjs",
+    "deploy": "cd .. && netlify deploy --prod --site cca70148-bd53-45bd-adff-f048f2cd24cf --dir frontend/dist --functions frontend/netlify/functions && cd frontend && node scripts/verify-deploy.mjs",
     "verify:deploy": "node scripts/verify-deploy.mjs"
   },
   "dependencies": {
