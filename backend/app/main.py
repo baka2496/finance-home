@@ -540,7 +540,15 @@ def run_automatic_updates() -> None:
             ],
             "errors": errors,
         }
-        _set_app_setting(db, "automation:last_status", "warning" if errors else "success")
+        # The scheduler forces exchange syncs, so a skipped exchange means it was
+        # paused (for example by a Binance rate limit) and its holdings are stale.
+        # That must never be reported as a fully successful update.
+        stale_exchanges = summary["exchanges_skipped"] > 0
+        _set_app_setting(
+            db,
+            "automation:last_status",
+            "warning" if errors or stale_exchanges else "success",
+        )
         _set_app_setting(db, "automation:last_run_at", finished_at)
         _set_app_setting(db, "automation:last_error", "、".join(errors))
         _set_app_setting(
