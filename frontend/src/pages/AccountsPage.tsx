@@ -457,7 +457,7 @@ export default function AccountsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Accounts"
+        eyebrow="帳戶"
         title="帳戶與餘額"
         description="查看銀行、投資與信用卡餘額，也可以更新或恢復已封存帳戶。"
         action={

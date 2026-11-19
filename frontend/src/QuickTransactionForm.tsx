@@ -50,9 +50,9 @@ export default function QuickTransactionForm({ kind, accounts, categories, owner
       }} aria-label={kind === "expense" ? "付款帳戶" : "入帳帳戶"}><option value="">選擇帳戶</option>{accounts.map((item) => <option key={item.id} value={item.id}>{item.name}（{item.owner_label}）</option>)}</Select>
     </Field>
     <Field label="摘要"><Input name="description" required maxLength={300} value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} placeholder={kind === "expense" ? "例如：早餐、房租" : "例如：薪水、退款"} /></Field>
-    <FormOptions title={`更多選項（${draft.transaction_date}）`}>
+    <Field label="分類" hint="不選的話，系統會依摘要自動分類"><Select name="category_id" aria-label="分類" value={draft.category_id} onChange={(event) => setDraft({ ...draft, category_id: event.target.value })}><option value="">自動分類</option>{categories.filter((category) => category.kind === kind).map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</Select></Field>
+    <FormOptions title={`日期與備註（${draft.transaction_date}）`}>
     <Field label="日期"><DateInput name="transaction_date" value={draft.transaction_date} onChange={(event) => setDraft({ ...draft, transaction_date: event.target.value })} required /></Field>
-    <Field label="分類"><Select name="category_id" value={draft.category_id} onChange={(event) => setDraft({ ...draft, category_id: event.target.value })}><option value="">自動分類</option>{categories.filter((category) => category.kind === kind).map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</Select></Field>
     <Field label="備註"><Input name="note" maxLength={1000} value={draft.note} onChange={(event) => setDraft({ ...draft, note: event.target.value })} placeholder="選填" /></Field>
     </FormOptions>
     {(draft.amount || draft.description || draft.note) && <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500"><span>尚未記帳；關閉後暫存草稿，僅限本次瀏覽。</span><Button variant="ghost" className="h-8 px-2 text-xs" disabled={pending} onClick={() => { setDraft({ amount: "", description: "", transaction_date: taipeiDateInputValue(), category_id: "", note: "" }); }}>清空草稿</Button></div>}

@@ -2,9 +2,7 @@ import { FormEvent, type SetStateAction, useEffect, useMemo, useRef, useState } 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
-  ArrowDownLeft,
   ArrowRightLeft,
-  ArrowUpRight,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -27,6 +25,7 @@ import TransactionCorrection from "../TransactionCorrection";
 import BatchClassification from "../BatchClassification";
 import { COMMON_CURRENCIES } from "../currencies";
 import { useTransactionScroll } from "../useTransactionScroll";
+import { ExpenseIcon, IncomeIcon } from "../flowIcons";
 import QuickTransactionForm, { clearQuickDraft, readRememberedTransactionAccount, rememberTransactionAccount } from "../QuickTransactionForm";
 import { invalidateFinanceData } from "../appQueries";
 import { readTransactionFilters, saveTransactionFilters, transactionFilterParams, transactionSourceLabel, type TransactionFilters } from "../transactionFilters";
@@ -577,7 +576,7 @@ export default function TransactionsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Cash flow"
+        eyebrow="收支"
         title="交易與現金流"
         description="匯入銀行或信用卡 CSV，分類支出並排除自有帳戶間轉帳。"
         action={
@@ -817,7 +816,7 @@ export default function TransactionsPage() {
                           : "bg-orange-50 text-orange-700"
                       }`}
                     >
-                      {transaction.base_amount >= 0 ? <ArrowDownLeft size={18} /> : <ArrowUpRight size={18} />}
+                      {transaction.base_amount >= 0 ? <IncomeIcon size={18} /> : <ExpenseIcon size={18} />}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">

@@ -702,7 +702,8 @@ export function Dialog({
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    dialogRef.current?.focus();
+    // Keep focus on a field that asked for it (autoFocus), e.g. the amount input.
+    if (!dialogRef.current?.contains(document.activeElement)) dialogRef.current?.focus();
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.defaultPrevented || document.querySelector('[data-picker-popover="true"]')) return;

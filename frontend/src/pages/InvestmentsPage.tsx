@@ -110,6 +110,20 @@ const defaultCurrencyForMarket = (market: string) =>
 const defaultMarketForAccount = (account?: Account) =>
   account?.account_type === "crypto" ? "CRYPTO" : "TWSE";
 
+const PRICE_SOURCE_LABELS: Record<string, string> = {
+  manual: "手動價格",
+  missing: "尚無價格",
+  demo: "示範資料",
+  TWSE: "證交所",
+  TPEX: "櫃買中心",
+  CBC: "央行",
+};
+
+/** Chinese label for a position's price source; provider names such as Binance stay as-is. */
+export function priceSourceLabel(source: string) {
+  return PRICE_SOURCE_LABELS[source] ?? source;
+}
+
 export function investmentTradeValidation({
   side,
   quantity,
@@ -560,7 +574,7 @@ export default function InvestmentsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Portfolio"
+        eyebrow="投資"
         title="投資持倉"
         description="用買入與賣出記錄投資，系統會同步更新持倉、平均成本與帳戶餘額。"
         action={
@@ -753,7 +767,7 @@ export default function InvestmentsPage() {
                   </div>
                   <div className="rounded-xl bg-slate-50 p-3">
                     <p className="text-xs text-slate-400">資料狀態</p>
-                    <div className="mt-1"><Badge tone={position.stale ? "amber" : "green"}>{position.price_source}</Badge></div>
+                    <div className="mt-1"><Badge tone={position.stale ? "amber" : "green"}>{priceSourceLabel(position.price_source)}</Badge></div>
                     <p className="mt-1 text-xs text-slate-400">{position.price_date || "尚無行情"}</p>
                   </div>
                   {position.instrument_type === "futures" ? (
@@ -857,7 +871,7 @@ export default function InvestmentsPage() {
                     <td className="px-5 py-4">
                       <Badge tone={position.stale ? "amber" : "green"}>
                         {position.stale ? <Clock3 size={12} className="mr-1" /> : null}
-                        {position.price_source}
+                        {priceSourceLabel(position.price_source)}
                       </Badge>
                       <p className="mt-1.5 text-xs text-slate-400">{position.price_date || "尚無行情"}</p>
                     </td>
