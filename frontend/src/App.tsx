@@ -303,13 +303,13 @@ function Sidebar({
                   {session.data_location === "cloud" ? "雲端財務資料" : "本機財務資料"}
                 </p>
                 <p className="truncate text-xs text-emerald-100/70">
-                  {session.required ? "登入狀態：已登入" : "儲存在這台電腦"}
+                  {session.required ? "登入狀態：已登入" : session.data_location === "cloud" ? "儲存在雲端" : "儲存在這台電腦"}
                 </p>
-                <p className="truncate text-xs text-emerald-100/55" title={formatSessionExpiration(session.session_expires_at)}>
-                  {session.required
-                    ? `工作階段至 ${formatSessionExpiration(session.session_expires_at)}`
-                    : "資料庫位於這台電腦"}
-                </p>
+                {session.required && (
+                  <p className="truncate text-xs text-emerald-100/55" title={formatSessionExpiration(session.session_expires_at)}>
+                    {`工作階段至 ${formatSessionExpiration(session.session_expires_at)}`}
+                  </p>
+                )}
               </div>
             </div>
             {avatarError && <p role="alert" className="mt-2 text-xs text-amber-200">{avatarError}</p>}
@@ -637,7 +637,7 @@ function FinanceApp({ session }: { session: AuthStatus }) {
           {showGlobalOwnerFilter ? <GlobalOwnerSelect compact /> : <div className="size-10" />}
         </div>
         <GlobalOwnerBar />
-        <main className="mx-auto min-h-screen max-w-[1600px] px-4 pb-20 pt-7 sm:px-7 lg:px-10 lg:py-9">
+        <main className="mx-auto min-h-screen max-w-[1600px] px-4 pb-28 pt-7 sm:px-7 lg:px-10 lg:py-9">
           <Suspense
             fallback={
               <div className="space-y-5">

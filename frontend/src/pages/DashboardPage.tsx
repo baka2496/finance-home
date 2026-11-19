@@ -1,7 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import {
-  ArrowDownRight,
-  ArrowUpRight,
   CircleAlert,
   Landmark,
   PieChart as PieIcon,
@@ -26,6 +24,7 @@ import {
   YAxis,
 } from "recharts";
 import { api } from "../api";
+import { ExpenseIcon, IncomeIcon } from "../flowIcons";
 import AttentionReminders from "../AttentionReminders";
 import { useOwnerFilter } from "../ownerFilter";
 import type { Dashboard } from "../types";
@@ -111,7 +110,7 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Financial overview"
+        eyebrow="總覽"
         title="你的財務總覽"
         description="所有帳戶、投資與現金流，集中在同一個地方。"
         action={
@@ -153,14 +152,14 @@ export default function DashboardPage() {
               label="本月收入"
               value={money(data.month_income)}
               subtext="不包含帳戶間轉帳"
-              icon={ArrowUpRight}
+              icon={IncomeIcon}
               tone="bg-blue-50 text-blue-700"
             />
             <StatCard
               label="本月支出"
               value={money(data.month_expense)}
               subtext="依交易分類彙整"
-              icon={ArrowDownRight}
+              icon={ExpenseIcon}
               tone="bg-orange-50 text-orange-700"
             />
             <StatCard
@@ -354,7 +353,7 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <EmptyState
-                  icon={<ArrowDownRight size={22} />}
+                  icon={<ExpenseIcon size={22} />}
                   title="本月還沒有支出"
                   description="手動新增或匯入交易後，這裡會整理主要支出。"
                 />

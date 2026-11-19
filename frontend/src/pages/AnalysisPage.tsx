@@ -248,7 +248,7 @@ export default function AnalysisPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Insights"
+        eyebrow="分析"
         title="財務健康分析"
         description="用透明公式檢視現金流、預備金、負債與預算執行情況。"
       />

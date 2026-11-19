@@ -2946,6 +2946,20 @@ async def backup_restore(db: DB, file: UploadFile = File(...)):
 
 
 FRONTEND_DIST = ROOT_DIR / "frontend" / "dist"
+
+
+def spa_file_response(path: Path) -> FileResponse:
+    """Serve a built frontend file.
+
+    HTML must be revalidated on every load: without Cache-Control, browsers
+    guess a freshness lifetime from Last-Modified and keep showing an old
+    build after an update. Hashed files under /assets are safe to cache.
+    """
+    if path.suffix == ".html":
+        return FileResponse(path, headers={"Cache-Control": "no-cache"})
+    return FileResponse(path)
+
+
 if FRONTEND_DIST.exists():
     assets = FRONTEND_DIST / "assets"
     if assets.exists():
@@ -2959,5 +2973,5 @@ if FRONTEND_DIST.exists():
             and requested.is_relative_to(FRONTEND_DIST.resolve())
             and requested.is_file()
         ):
-            return FileResponse(requested)
-        return FileResponse(FRONTEND_DIST / "index.html")
+            return spa_file_response(requested)
+        return spa_file_response(FRONTEND_DIST / "index.html")
