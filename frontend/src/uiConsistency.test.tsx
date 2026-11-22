@@ -64,6 +64,29 @@ describe("the sidebar storage note", () => {
   });
 });
 
+describe("removed features and dead UI remnants do not creep back in", () => {
+  const allFrontendFiles = [
+    ...pageSources,
+    ...["App.tsx", "appQueries.ts", "ownerFilter.ts", "types.ts", "ui.tsx"].map((name) => ({
+      name,
+      source: readFileSync(join(srcDir, name), "utf8"),
+    })),
+  ];
+
+  it("does not reference removed plans/goals, budgets, overall health scores, or hidden engineering settings", () => {
+    for (const { name, source } of allFrontendFiles) {
+      expect(source, name).not.toMatch(/\bSHOW_ENGINEERING_SETTINGS\b/);
+      expect(source, name).not.toMatch(/\bMobileWizard(Progress|Step|Actions)\b/);
+      expect(source, name).not.toMatch(/\bvalidateWizardStep\b/);
+      expect(source, name).not.toContain('path="/plans"');
+      expect(source, name).not.toContain("超出整體預算");
+      expect(source, name).not.toContain("設定預算");
+      expect(source, name).not.toContain("共同");
+      expect(source, name).not.toMatch(/\bexport interface Budget\b/);
+    }
+  });
+});
+
 describe("adding a transaction", () => {
   const accounts = [{ id: 1, name: "現金", currency: "TWD", owner_label: "我" }] as Account[];
   const categories = [

@@ -2323,34 +2323,20 @@ def test_budget_goal_and_health_score(client: TestClient):
             },
         )
 
-    budget = client.post(
-        "/api/budgets",
-        json={
-            "month": today.strftime("%Y-%m"),
-            "category_id": food["id"],
-            "amount": 15000,
-        },
-    )
-    assert budget.status_code == 200
-    goal = client.post(
-        "/api/goals",
-        json={"name": "旅遊", "target_amount": 50000, "current_amount": 10000},
-    )
-    assert goal.status_code == 201
-
     health = client.get("/api/analysis/health")
     assert health.status_code == 200
     payload = health.json()
-    assert payload["completeness"] >= 3
-    assert payload["score"] is not None
+    assert payload["completeness"] >= 2
+    assert "score" not in payload
+    assert [item["key"] for item in payload["components"]] == ["savings", "debt", "emergency"]
 
     filtered_health = client.get("/api/analysis/health?owner=me")
     assert filtered_health.status_code == 200
-    assert filtered_health.json()["score"] is not None
+    assert filtered_health.json()["completeness"] >= 2
 
     partner_health = client.get("/api/analysis/health?owner=partner")
     assert partner_health.status_code == 200
-    assert partner_health.json()["score"] is None
+    assert partner_health.json()["completeness"] == 0
 
 
 def test_spending_analysis_supports_months_and_recurring_expenses(client: TestClient):

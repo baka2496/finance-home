@@ -71,14 +71,6 @@ export function prefetchSecondaryData(client: QueryClient, owner: string) {
       queryFn: () => api<Dashboard>(`/dashboard?owner=${owner}`),
     }),
     client.prefetchQuery({
-      queryKey: ["settings"],
-      queryFn: () => api("/settings"),
-    }),
-    client.prefetchQuery({
-      queryKey: ["fx"],
-      queryFn: () => api("/fx"),
-    }),
-    client.prefetchQuery({
       queryKey: ["rules"],
       queryFn: () => api("/rules"),
     }),

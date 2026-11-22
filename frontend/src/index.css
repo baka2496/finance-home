@@ -278,16 +278,6 @@ input[type="time"]::-webkit-date-and-time-value {
     gap: 0;
   }
 
-  .settings-advanced-card > button {
-    gap: .75rem;
-    padding: 1rem;
-  }
-
-  .settings-advanced-card > button > .inline-flex,
-  .settings-advanced-card > button > span {
-    flex: 0 0 auto;
-  }
-
   @media (max-width: 420px) {
     .settings-mobile-section-status:not(.is-warning) {
       display: none;

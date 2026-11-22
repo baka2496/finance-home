@@ -29,15 +29,14 @@ describe("investment trade guardrails", () => {
 describe("analysis recommendations", () => {
   it("does not ask for income when income-based indicators are already valid", () => {
     const health: HealthScore = {
-      score: null,
-      completeness: 1,
+      completeness: 3,
       components: [
-        { key: "savings", label: "儲蓄率", value: 82.5, score: null, detail: "" },
-        { key: "debt", label: "負債支出比", value: 0, score: null, detail: "" },
-        { key: "emergency", label: "緊急預備金", value: 12, score: null, detail: "" },
+        { key: "savings", label: "儲蓄率", value: 82.5, detail: "" },
+        { key: "debt", label: "負債支出比", value: 0, detail: "" },
+        { key: "emergency", label: "緊急預備金", value: 12, detail: "" },
       ],
     };
-    expect(makeRecommendations(health)).not.toContain("補上最近三個月的收入交易，才能計算儲蓄率、必要支出比與債務支出比。");
+    expect(makeRecommendations(health)).not.toContain("補上最近三個月的收入交易，才能計算儲蓄率與負債支出比。");
   });
 });
 

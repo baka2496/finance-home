@@ -774,103 +774,6 @@ export function Skeleton({ className }: { className?: string }) {
   return <div aria-hidden="true" className={cn("animate-pulse rounded-xl bg-slate-200/70", className)} />;
 }
 
-export function MobileWizardProgress({
-  current,
-  labels,
-}: {
-  current: number;
-  labels: string[];
-}) {
-  return (
-    <div className="sm:hidden">
-      <div className="mb-2 flex items-center justify-between text-xs">
-        <span className="font-semibold text-emerald-700">步驟 {current} / {labels.length}</span>
-        <span className="text-slate-500">{labels[current - 1]}</span>
-      </div>
-      <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${labels.length}, minmax(0, 1fr))` }}>
-        {labels.map((label, index) => (
-          <span
-            key={label}
-            className={cn("h-1.5 rounded-full transition", index < current ? "bg-emerald-500" : "bg-slate-100")}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export function MobileWizardStep({
-  step,
-  current,
-  children,
-}: {
-  step: number;
-  current: number;
-  children: ReactNode;
-}) {
-  return (
-    <div data-wizard-step={step} className={cn(step === current ? "block" : "hidden", "sm:block")}>
-      {children}
-    </div>
-  );
-}
-
-export function validateWizardStep(form: HTMLFormElement | null, step: number) {
-  const container = form?.querySelector<HTMLElement>(`[data-wizard-step="${step}"]`);
-  if (!container) return true;
-  const controls = Array.from(
-    container.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>("input, select, textarea"),
-  );
-  for (const control of controls) {
-    if (control.disabled || control.checkValidity()) continue;
-    control.reportValidity();
-    control.focus();
-    return false;
-  }
-  return true;
-}
-
-export function MobileWizardActions({
-  current,
-  total,
-  onPrevious,
-  onNext,
-  onCancel,
-  submitLabel,
-  pending = false,
-  submitDisabled = false,
-}: {
-  current: number;
-  total: number;
-  onPrevious: () => void;
-  onNext: () => void;
-  onCancel: () => void;
-  submitLabel: string;
-  pending?: boolean;
-  submitDisabled?: boolean;
-}) {
-  return (
-    <>
-      <div className="mobile-safe-actions sticky bottom-0 z-20 -mx-4 mt-5 flex gap-2 border-t border-slate-100 bg-white/95 px-4 py-3 backdrop-blur sm:hidden">
-        <Button type="button" variant="secondary" className="flex-1" disabled={pending} onClick={current === 1 ? onCancel : onPrevious}>
-          {current === 1 ? "取消" : <><ChevronLeft size={16} /> 上一步</>}
-        </Button>
-        {current < total ? (
-          <Button key="next-step" type="button" className="flex-1" disabled={pending} onClick={onNext}>
-            下一步 <ChevronRight size={16} />
-          </Button>
-        ) : (
-          <Button key="submit-form" type="submit" className="flex-1" disabled={pending || submitDisabled}>{pending ? "儲存中…" : submitLabel}</Button>
-        )}
-      </div>
-      <div className="hidden justify-end gap-3 pt-2 sm:flex">
-        <Button type="button" variant="ghost" disabled={pending} onClick={onCancel}>取消</Button>
-        <Button type="submit" disabled={pending || submitDisabled}>{pending ? "儲存中…" : submitLabel}</Button>
-      </div>
-    </>
-  );
-}
-
 export function EmptyState({
   icon,
   title,
@@ -932,17 +835,6 @@ export const money = (value: number, currency = "TWD") => {
 
 export const number = (value: number, digits = 0) =>
   new Intl.NumberFormat("zh-TW", { maximumFractionDigits: digits }).format(value || 0);
-
-export function Progress({ value, color = "bg-emerald-500" }: { value: number; color?: string }) {
-  return (
-    <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-      <div
-        className={cn("h-full rounded-full transition-all", color)}
-        style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
-      />
-    </div>
-  );
-}
 
 export function Badge({
   children,

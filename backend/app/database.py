@@ -221,39 +221,6 @@ class FxRate(Base, TimestampMixin):
     manual: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
-class Budget(Base, TimestampMixin):
-    __tablename__ = "budgets"
-    __table_args__ = (
-        UniqueConstraint("month", "category_id", name="uq_budget_month_category"),
-    )
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    month: Mapped[str] = mapped_column(String(7), index=True)
-    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
-    amount: Mapped[Decimal] = mapped_column(Numeric(18, 2))
-    currency: Mapped[str] = mapped_column(String(3), default="TWD")
-
-    category: Mapped["Category"] = relationship()
-
-
-class Goal(Base, TimestampMixin):
-    __tablename__ = "goals"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(100))
-    owner: Mapped[str] = mapped_column(String(20), default="me")
-    goal_type: Mapped[str] = mapped_column(String(30), default="net_worth")
-    account_id: Mapped[int | None] = mapped_column(ForeignKey("accounts.id"))
-    target_amount: Mapped[Decimal] = mapped_column(Numeric(18, 2))
-    current_amount: Mapped[Decimal] = mapped_column(Numeric(18, 2), default=0)
-    target_date: Mapped[date | None] = mapped_column(Date)
-    currency: Mapped[str] = mapped_column(String(3), default="TWD")
-    completed: Mapped[bool] = mapped_column(Boolean, default=False)
-    note: Mapped[str | None] = mapped_column(Text)
-
-    account: Mapped["Account | None"] = relationship()
-
-
 class RecurringExpense(Base, TimestampMixin):
     __tablename__ = "recurring_expenses"
 

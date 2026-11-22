@@ -17,7 +17,6 @@ import {
   RefreshCw,
   Save,
   Search,
-  Shield,
   Sun,
   Trash2,
   Upload,
@@ -25,7 +24,6 @@ import {
 import { api, apiBlob } from "../api";
 import { invalidateFinanceData } from "../appQueries";
 import { automationTimestamp, describeAutomationStatus, type AutomationStatus } from "../automationStatus";
-import { COMMON_CURRENCIES } from "../currencies";
 import { taipeiDateInputValue } from "../date";
 import { type AppTheme, getStoredTheme, saveTheme } from "../theme";
 import type { Account, Category } from "../types";
@@ -34,27 +32,12 @@ import {
   Button,
   Card,
   cn,
-  DateInput,
   FormStep,
   Field,
   Input,
   PageHeader,
   Select,
 } from "../ui";
-
-interface SettingsData {
-  mode: string;
-  base_currency: string;
-  alpha_vantage_configured: boolean;
-}
-
-interface FxRate {
-  currency: string;
-  rate_date: string;
-  rate_to_twd: number;
-  source: string;
-  manual: boolean;
-}
 
 interface Rule {
   id: number;
@@ -71,7 +54,7 @@ interface Rule {
 interface BinanceConnection {
   account_id: number;
   account_name: string;
-  owner: "me" | "partner" | "shared";
+  owner: "me" | "partner";
   owner_label: string;
   connected: boolean;
   last_sync_at?: string;
@@ -172,7 +155,7 @@ interface EmailSyncResult {
 interface EmailCardRule {
   id: number;
   name: string;
-  owner: "me" | "partner" | "shared";
+  owner: "me" | "partner";
   card_account_id: number;
   card_account_name: string;
   payment_account_id: number;
@@ -224,8 +207,6 @@ interface EmailScreenshotAnalysis {
   confidence: "high" | "medium" | "unknown";
   evidence: string[];
 }
-
-const SHOW_ENGINEERING_SETTINGS = false;
 
 const SUPPORTED_CARD_PROVIDERS = [
   { key: "cathay", label: "國泰世華銀行信用卡" },
@@ -329,7 +310,6 @@ export default function SettingsPage() {
   const [messageTone, setMessageTone] = useState<"success" | "warning" | "error">("success");
   function setMessage(text: string, tone: "success" | "warning" | "error" = "success") { storeMessage(text); setMessageTone(tone); }
   function showError(text: string) { setMessage(text, "error"); }
-  const [marketSettingsOpen, setMarketSettingsOpen] = useState(false);
   const [exchangeSettingsOpen, setExchangeSettingsOpen] = useState(false);
   const [emailSettingsOpen, setEmailSettingsOpen] = useState(false);
   const [editingEmailRule, setEditingEmailRule] = useState<EmailCardRule | null>(null);
@@ -341,7 +321,6 @@ export default function SettingsPage() {
   const [emailScreenshotProgress, setEmailScreenshotProgress] = useState(0);
   const [emailScreenshotBusy, setEmailScreenshotBusy] = useState(false);
   const [emailScreenshotAnalysis, setEmailScreenshotAnalysis] = useState<EmailScreenshotAnalysis | null>(null);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [theme, setTheme] = useState<AppTheme>(() => getStoredTheme());
   const [lastBackupAt, setLastBackupAt] = useState(() => localStorage.getItem("finance:lastBackupAt") || "");
   const [ruleSearch, setRuleSearch] = useState("");
@@ -351,16 +330,6 @@ export default function SettingsPage() {
   const [ruleCategoryId, setRuleCategoryId] = useState("");
   const [ruleTransactionKind, setRuleTransactionKind] = useState("expense");
 
-  const settings = useQuery({
-    queryKey: ["settings"],
-    queryFn: () => api<SettingsData>("/settings"),
-    enabled: SHOW_ENGINEERING_SETTINGS,
-  });
-  const fx = useQuery({
-    queryKey: ["fx"],
-    queryFn: () => api<FxRate[]>("/fx"),
-    enabled: SHOW_ENGINEERING_SETTINGS,
-  });
   const rules = useQuery({ queryKey: ["rules"], queryFn: () => api<Rule[]>("/rules") });
   const categories = useQuery({ queryKey: ["categories"], queryFn: () => api<Category[]>("/categories") });
   const binanceConnections = useQuery({
@@ -410,7 +379,7 @@ export default function SettingsPage() {
   ];
   const failedQueries = settingsQueries.filter(([, query]) => query.isError);
   const paymentAccounts = (accounts.data || []).filter((account) => account.nature === "asset");
-  const latestFxDate = fx.data?.reduce((latest, rate) => (rate.rate_date > latest ? rate.rate_date : latest), "") || "";
+  const [latestFxDate, setLatestFxDate] = useState("");
   const blockedConnections = (binanceConnections.data || []).filter((item) => {
     const until = utcDate(item.backoff_until);
     return Boolean(until && until.getTime() > Date.now());
@@ -429,22 +398,10 @@ export default function SettingsPage() {
     { key: "custom", label: "我的自動分類", items: filteredRules },
   ].filter((group) => group.items.length > 0);
 
-  const saveSettings = useMutation({
-    mutationFn: (key: string) =>
-      api<SettingsData>("/settings", {
-        method: "PUT",
-        body: JSON.stringify({ alpha_vantage_api_key: key }),
-      }),
-    onSuccess: () => {
-      invalidateFinanceData(client, ["settings"]);
-      setMessage("行情備援設定已儲存。");
-    },
-    onError: (error) => showError(friendlySettingsMessage((error as Error).message, "操作尚未完成，輸入內容已保留，請稍後再試。")),
-  });
   const refreshFx = useMutation({
     mutationFn: () => api<{ saved: number; latest_date?: string }>("/fx/refresh", { method: "POST" }),
     onSuccess: (result) => {
-      invalidateFinanceData(client, ["fx"]);
+      if (result.latest_date) setLatestFxDate(result.latest_date);
       setMessage(`央行匯率更新完成，寫入 ${result.saved} 筆資料。`);
     },
     onError: (error) => showError(friendlySettingsMessage((error as Error).message, "操作尚未完成，輸入內容已保留，請稍後再試。")),
@@ -588,15 +545,6 @@ export default function SettingsPage() {
     },
     onError: (error) => showError(friendlySettingsMessage((error as Error).message, "操作尚未完成，輸入內容已保留，請稍後再試。")),
   });
-  const manualFx = useMutation({
-    mutationFn: (payload: Record<string, unknown>) =>
-      api("/fx/manual", { method: "POST", body: JSON.stringify(payload) }),
-    onSuccess: () => {
-      invalidateFinanceData(client, ["fx"]);
-      setMessage("自訂匯率已儲存。");
-    },
-    onError: (error) => showError(friendlySettingsMessage((error as Error).message, "操作尚未完成，輸入內容已保留，請稍後再試。")),
-  });
   const saveRule = useMutation({
     mutationFn: (payload: Record<string, unknown>) =>
       api(editingRuleId ? `/rules/${editingRuleId}` : "/rules", {
@@ -656,12 +604,6 @@ export default function SettingsPage() {
     finally { setBackupPending(false); }
   }
 
-  function submitSettings(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    saveSettings.mutate(String(form.get("api_key") || ""));
-  }
-
   function submitBinance(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -669,16 +611,6 @@ export default function SettingsPage() {
       account_id: Number(form.get("account_id")),
       api_key: String(form.get("api_key") || ""),
       api_secret: String(form.get("api_secret") || ""),
-    });
-  }
-
-  function submitManualFx(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    manualFx.mutate({
-      currency: form.get("currency"),
-      rate_date: form.get("rate_date"),
-      rate_to_twd: Number(form.get("rate_to_twd")),
     });
   }
 
@@ -1777,121 +1709,6 @@ export default function SettingsPage() {
         </div>
       </Card>
       </MobileSettingsSection>
-
-      {SHOW_ENGINEERING_SETTINGS && (
-      <Card className="settings-advanced-card mt-6 overflow-hidden">
-        <button
-          className="flex w-full items-center justify-between px-6 py-5 text-left hover:bg-slate-50"
-          onClick={() => setAdvancedOpen((value) => !value)}
-        >
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="rounded-xl bg-slate-100 p-2.5 text-slate-600"><Shield size={18} /></div>
-            <div className="min-w-0">
-              <h2 className="font-bold text-ink">進階資料設定</h2>
-              <p className="mt-1 truncate text-xs text-slate-400 md:whitespace-normal">平常不需要碰；需要設定備援行情、手動匯率或查看明細時再展開。</p>
-            </div>
-          </div>
-          <Badge>{advancedOpen ? "收起" : "展開"}</Badge>
-        </button>
-
-        {advancedOpen && (
-          <div className="border-t border-slate-100 p-6">
-            <div className="grid gap-6 xl:grid-cols-[.85fr_1.15fr]">
-              <div className="space-y-6">
-                <div className="rounded-2xl border border-slate-100 p-5">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-bold text-ink">美股備援行情</h3>
-                        <Badge tone={settings.data?.alpha_vantage_configured ? "green" : "slate"}>
-                          {settings.data?.alpha_vantage_configured ? "備援金鑰已設定" : "選填"}
-                        </Badge>
-                      </div>
-                      <p className="mt-2 text-xs leading-5 text-slate-400">
-                        平常會優先使用 Nasdaq；Alpha Vantage 金鑰只在主要來源失敗時作為備援，沒有設定也能更新行情。
-                      </p>
-                    </div>
-                    <Button variant="ghost" onClick={() => setMarketSettingsOpen((value) => !value)}>
-                      <KeyRound size={15} />
-                      {marketSettingsOpen
-                        ? "收起"
-                        : settings.data?.alpha_vantage_configured
-                          ? "更換備援金鑰"
-                          : "設定備援金鑰"}
-                    </Button>
-                  </div>
-                  {marketSettingsOpen && (
-                    <form className="mt-5 space-y-3" onSubmit={submitSettings}>
-                      <FormStep number={1} title="貼上 Alpha Vantage API 金鑰">
-                        <div className="flex flex-col gap-3 sm:flex-row">
-                          <Input name="api_key" type="password" autoComplete="off" placeholder="輸入 API key" required />
-                          <Button type="submit" className="shrink-0" disabled={saveSettings.isPending}>
-                            <Save size={16} /> 儲存備援金鑰
-                          </Button>
-                        </div>
-                      </FormStep>
-                    </form>
-                  )}
-                </div>
-
-                <div className="rounded-2xl border border-slate-100 p-5">
-                  <h3 className="font-bold text-ink">自訂匯率</h3>
-                  <p className="mt-1 text-xs text-slate-400">可覆蓋指定日期的官方匯率。</p>
-                  <form className="mt-5 space-y-4" onSubmit={submitManualFx}>
-                    <Field label="幣別">
-                      <Select name="currency">
-                        {COMMON_CURRENCIES.filter((item) => item !== "TWD").map((item) => <option key={item}>{item}</option>)}
-                      </Select>
-                    </Field>
-                    <Field label="日期">
-                      <DateInput name="rate_date" defaultValue={taipeiDateInputValue()} />
-                    </Field>
-                    <Field label="兌換台幣匯率">
-                      <Input name="rate_to_twd" type="number" min="0.000001" step="any" placeholder="例如：32.5" required />
-                    </Field>
-                    <Button type="submit" className="w-full">儲存自訂匯率</Button>
-                  </form>
-                </div>
-
-                <div className="rounded-2xl border border-slate-100 p-5">
-                  <h3 className="font-bold text-ink">本機資料模式</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-500">
-                    服務只開在 127.0.0.1，資料存在這台電腦。請不要把 data 資料夾或真實備份丟到公開地方。
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <Badge tone="green">本機模式</Badge>
-                    <Badge tone={settings.data?.mode === "demo" ? "blue" : "slate"}>
-                      {settings.data?.mode === "demo" ? "匿名示範資料庫" : "個人資料庫"}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-
-              <div className="overflow-hidden rounded-2xl border border-slate-100">
-                <div className="border-b border-slate-100 px-5 py-4">
-                  <h3 className="font-bold text-ink">匯率明細</h3>
-                  <p className="mt-1 text-xs text-slate-400">1 單位外幣可換算的新台幣。</p>
-                </div>
-                <div className="grid grid-cols-2 gap-px bg-slate-100 sm:grid-cols-4">
-                  {fx.data?.length ? fx.data.slice(0, 12).map((rate) => (
-                    <div key={rate.currency} className="bg-white p-4">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-bold text-slate-700">{rate.currency}</span>
-                        {rate.manual && <Badge tone="blue">手動</Badge>}
-                      </div>
-                      <p className="mt-2 text-lg font-bold text-ink">{rate.rate_to_twd.toLocaleString("zh-TW", { maximumFractionDigits: 5 })}</p>
-                      <p className="mt-1 text-[11px] text-slate-400">{rate.rate_date}</p>
-                    </div>
-                  )) : (
-                    <div className="col-span-full bg-white p-8 text-center text-sm text-slate-400">尚未下載匯率資料</div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </Card>
-      )}
     </>
   );
 }
