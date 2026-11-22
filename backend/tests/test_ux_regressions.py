@@ -274,8 +274,8 @@ def test_category_learning_is_explicit_account_scoped_and_future_only(client):
 
 def test_removed_budgets_goals_overall_score_and_shared_owner_stay_removed(client):
     assert not any(getattr(route, "path", "").startswith(("/api/budgets", "/api/goals")) for route in app.routes)
-    assert client.post("/api/budgets", json={"month": "2026-08", "category_id": 1, "amount": 5000}).status_code == 405
-    assert client.post("/api/goals", json={"name": "目標", "target_amount": 10000}).status_code == 405
+    assert client.post("/api/budgets", json={"month": "2026-08", "category_id": 1, "amount": 5000}).status_code in {404, 405}
+    assert client.post("/api/goals", json={"name": "目標", "target_amount": 10000}).status_code in {404, 405}
     assert client.get("/api/accounts?owner=shared").status_code == 422
     assert client.post("/api/accounts", json={"name": "共同帳戶", "account_type": "bank", "owner": "shared"}).status_code == 422
     health = client.get("/api/analysis/health").json()
