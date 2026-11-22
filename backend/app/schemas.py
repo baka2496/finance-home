@@ -122,36 +122,6 @@ class InvestmentTradeCreate(BaseModel):
     note: str | None = None
 
 
-class BudgetCreate(BaseModel):
-    month: str = Field(pattern=r"^\d{4}-\d{2}$")
-    category_id: int
-    amount: Decimal = Field(gt=0)
-
-
-class GoalCreate(BaseModel):
-    name: str
-    owner: str = "me"
-    goal_type: str = "net_worth"
-    account_id: int | None = None
-    target_amount: Decimal = Field(gt=0)
-    current_amount: Decimal = Decimal("0")
-    target_date: date | None = None
-    currency: str = "TWD"
-    note: str | None = None
-
-
-class GoalUpdate(BaseModel):
-    name: str | None = None
-    owner: str | None = None
-    goal_type: str | None = None
-    account_id: int | None = None
-    target_amount: Decimal | None = None
-    current_amount: Decimal | None = None
-    target_date: date | None = None
-    completed: bool | None = None
-    note: str | None = None
-
-
 class RecurringExpenseCreate(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     match_name: str | None = Field(default=None, max_length=300)
@@ -241,7 +211,7 @@ class BinanceConnectionCreate(BaseModel):
 
 class EmailCardRuleCreate(BaseModel):
     name: str = Field(min_length=1, max_length=100)
-    owner: Literal["me", "partner", "shared"] = "me"
+    owner: Literal["me", "partner"] = "me"
     card_account_id: int
     payment_account_id: int
     sender_pattern: str | None = Field(default=None, max_length=200)
@@ -257,7 +227,7 @@ class EmailCardRuleCreate(BaseModel):
 
 class EmailCardRuleUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=100)
-    owner: Literal["me", "partner", "shared"] | None = None
+    owner: Literal["me", "partner"] | None = None
     card_account_id: int | None = None
     payment_account_id: int | None = None
     sender_pattern: str | None = Field(default=None, max_length=200)

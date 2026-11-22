@@ -158,7 +158,6 @@ export default function TransactionsPage() {
   const [ownerFilter] = useOwnerFilter();
   const [manualOpen, setManualOpen] = useState(false);
   const [manualScenario, setManualScenario] = useState<ManualScenario | null>(null);
-  const [manualKind, setManualKind] = useState("expense");
   const [loanPaymentAccountId, setLoanPaymentAccountId] = useState("");
   const [loanAccountId, setLoanAccountId] = useState("");
   const [importOpen, setImportOpen] = useState(false);
@@ -193,7 +192,6 @@ export default function TransactionsPage() {
 
     if (quickAction === "expense" || quickAction === "income") {
       setManualScenario(quickAction);
-      setManualKind(quickAction);
       setLoanAccountId("");
 
       setManualOpen(true);
@@ -324,7 +322,6 @@ export default function TransactionsPage() {
       invalidateFinanceData(client, ["transactions","accounts","dashboard"]);
       setManualOpen(false);
       setManualScenario(null);
-      setManualKind("expense");
       setLoanAccountId("");
       restoreListScroll();
     },
@@ -458,7 +455,6 @@ export default function TransactionsPage() {
       rememberTransactionAccount(ownerFilter, "loan_payment:loan", Number(payload.loan_account_id));
       invalidateFinanceData(client, ["transactions","accounts","dashboard","credit-card-cycles","credit-card-bills","spending-analysis"]);
       setManualOpen(false);
-      setManualKind("expense");
       setLoanPaymentAccountId("");
       setLoanAccountId("");
       setManualScenario(null);
@@ -468,7 +464,6 @@ export default function TransactionsPage() {
 
   function openManualDialog() {
     setManualScenario("expense");
-    setManualKind("expense");
     setLoanPaymentAccountId("");
     setLoanAccountId("");
     createTransaction.reset();
@@ -480,7 +475,6 @@ export default function TransactionsPage() {
   function closeManualDialog() {
     setManualOpen(false);
     setManualScenario(null);
-    setManualKind("expense");
     setLoanPaymentAccountId("");
     setLoanAccountId("");
     createTransaction.reset();
@@ -504,7 +498,6 @@ export default function TransactionsPage() {
       setManualOpen(true);
     }
     setManualScenario(scenario);
-    setManualKind(scenario);
     setLoanPaymentAccountId("");
     setLoanAccountId("");
   }
@@ -943,13 +936,13 @@ export default function TransactionsPage() {
           )
         ) : (
           <form className="space-y-5" onSubmit={submitManual}>
-            <input type="hidden" name="transaction_kind" value={manualKind} />
+            <input type="hidden" name="transaction_kind" value="loan_payment" />
             <div className="space-y-3">
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label={manualKind === "income" ? "入帳帳戶" : "付款帳戶"}>
+                <Field label="付款帳戶">
                   <Select name="account_id" aria-label="付款帳戶" value={loanPaymentAccountId} onChange={(event) => setLoanPaymentAccountId(event.target.value)} required>
                     <option value="">選擇帳戶</option>
-                    {(manualKind === "loan_payment" ? paymentAccountOptions : accounts.data || []).map((account) => (
+                    {paymentAccountOptions.map((account) => (
                       <option key={account.id} value={account.id}>{account.name}（{account.owner_label}）</option>
                     ))}
                   </Select>
@@ -957,144 +950,90 @@ export default function TransactionsPage() {
               </div>
             </div>
 
-
             <div className="space-y-3">
               <Field label="摘要">
                 <Input
                   name="description"
-                  placeholder={
-                    manualKind === "income"
-                      ? "例如：薪水、退款"
-                      : manualKind === "loan_payment"
-                          ? "例如：學貸還款"
-                          : "例如：午餐、房租"
-                  }
+                  placeholder="例如：學貸還款"
                   required
                 />
               </Field>
             </div>
 
-
             <div className="space-y-3">
-              {manualKind === "loan_payment" ? (
-              <>
-                <div className="grid gap-4">
-                  {accounts.isLoading ? (
-                    <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">正在載入貸款帳戶…</div>
-                  ) : loanAccountOptions.length > 0 ? (
-                    <Field label="貸款帳戶">
-                      <Select
-                        name="loan_account_id"
-                        aria-label="貸款帳戶"
-                        value={loanAccountId}
-                        onChange={(event) => setLoanAccountId(event.target.value)}
-                        required
-                      >
-                        <option value="">選擇貸款帳戶</option>
-                        {loanAccountOptions.map((account) => (
-                          <option key={account.id} value={account.id}>{account.name}（{account.owner_label}）</option>
-                        ))}
-                      </Select>
-                    </Field>
-                  ) : (
-                    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                      <div className="flex items-start gap-3">
-                        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white text-amber-600">
-                          <Landmark size={20} />
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-slate-800">目前沒有可選的貸款帳戶</p>
-                          <p className="mt-1 text-xs leading-5 text-slate-500">
-                            「車貸」固定花費是每月支出規則，不是貸款餘額帳戶。先建立貸款帳戶，才能分開記錄本金與利息。
-                          </p>
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            className="mt-3 w-full sm:w-auto"
-                            onClick={() => navigate("/accounts?quick=loan")}
-                          >
-                            <Plus size={16} /> 建立貸款帳戶
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                {loanAccountOptions.length > 0 && (
-                  <>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <Field label="本金">
-                        <Input name="principal" type="number" inputMode="decimal" min="0" step="any" placeholder="0" required />
-                      </Field>
-                      <Field label="利息">
-                        <Input name="interest" type="number" inputMode="decimal" min="0" step="any" placeholder="0" required />
-                      </Field>
-                    </div>
-                    <p className="rounded-xl bg-slate-50 p-4 text-xs leading-5 text-slate-500">
-                      系統會把本金用來降低貸款負債，利息列為支出；付款帳戶會扣除本金加利息。
-                    </p>
-                  </>
-                )}
-              </>
-              ) : (
-              <>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field
-                    label={
-                      manualKind === "income"
-                        ? "收到金額"
-                        : "花費金額"
-                    }
-                  >
-                    <Input name="amount" type="number" inputMode="decimal" min="0" step="any" placeholder="0" required />
-                  </Field>
-                  <Field label="幣別">
-                    <Select name="currency" defaultValue="TWD">
-                      {COMMON_CURRENCIES.map((currency) => (
-                        <option key={currency}>{currency}</option>
+              <div className="grid gap-4">
+                {accounts.isLoading ? (
+                  <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">正在載入貸款帳戶…</div>
+                ) : loanAccountOptions.length > 0 ? (
+                  <Field label="貸款帳戶">
+                    <Select
+                      name="loan_account_id"
+                      aria-label="貸款帳戶"
+                      value={loanAccountId}
+                      onChange={(event) => setLoanAccountId(event.target.value)}
+                      required
+                    >
+                      <option value="">選擇貸款帳戶</option>
+                      {loanAccountOptions.map((account) => (
+                        <option key={account.id} value={account.id}>{account.name}（{account.owner_label}）</option>
                       ))}
                     </Select>
                   </Field>
-                </div>
-                <Field label="分類">
-                  <Select name="category_id">
-                    <option value="">自動分類</option>
-                    {categoriesForTransactionKind(categories.data || [], manualKind).map((category) => (
-                      <option key={category.id} value={category.id}>{category.name}</option>
-                    ))}
-                  </Select>
-                </Field>
-              </>
+                ) : (
+                  <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                    <div className="flex items-start gap-3">
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white text-amber-600">
+                        <Landmark size={20} />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-slate-800">目前沒有可選的貸款帳戶</p>
+                        <p className="mt-1 text-xs leading-5 text-slate-500">
+                          「車貸」固定花費是每月支出規則，不是貸款餘額帳戶。先建立貸款帳戶，才能分開記錄本金與利息。
+                        </p>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="mt-3 w-full sm:w-auto"
+                          onClick={() => navigate("/accounts?quick=loan")}
+                        >
+                          <Plus size={16} /> 建立貸款帳戶
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              {loanAccountOptions.length > 0 && (
+                <>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Field label="本金">
+                      <Input name="principal" type="number" inputMode="decimal" min="0" step="any" placeholder="0" required />
+                    </Field>
+                    <Field label="利息">
+                      <Input name="interest" type="number" inputMode="decimal" min="0" step="any" placeholder="0" required />
+                    </Field>
+                  </div>
+                  <p className="rounded-xl bg-slate-50 p-4 text-xs leading-5 text-slate-500">
+                    系統會把本金用來降低貸款負債，利息列為支出；付款帳戶會扣除本金加利息。
+                  </p>
+                </>
               )}
             </div>
 
-            {manualKind !== "loan_payment" && (
-              <details className="rounded-2xl border border-slate-200 px-4 py-3">
-                <summary className="cursor-pointer list-none text-sm font-medium text-slate-600">其他設定（自訂匯率）</summary>
-                <div className="mt-4">
-                  <Field label="自訂匯率" hint="台幣或已有匯率資料時可以留空。">
-                    <Input name="fx_rate" type="number" step="any" placeholder="1 單位原幣可換多少 TWD" />
-                  </Field>
-                </div>
-              </details>
-            )}
+            <FormOptions title={`更多選項（${taipeiDateInputValue()}）`}>
+              <Field label="日期">
+                <DateInput name="transaction_date" defaultValue={taipeiDateInputValue()} required />
+              </Field>
+              <Field label="備註"><Input name="note" maxLength={1000} placeholder="選填" /></Field>
+            </FormOptions>
 
-            {manualKind === "loan_payment" && (
-              <FormOptions title={`更多選項（${taipeiDateInputValue()}）`}>
-                <Field label="日期">
-                  <DateInput name="transaction_date" defaultValue={taipeiDateInputValue()} required />
-                </Field>
-                <Field label="備註"><Input name="note" maxLength={1000} placeholder="選填" /></Field>
-              </FormOptions>
-            )}
-
-            {(createTransaction.isError || createLoanPayment.isError) && (
+            {createLoanPayment.isError && (
               <p className="text-sm text-red-600">
-                {((createTransaction.error || createLoanPayment.error) as Error).message}
+                {(createLoanPayment.error as Error).message}
               </p>
             )}
 
-            <FormActions onCancel={closeManualDialog} label={manualKind === "loan_payment" ? "儲存還款" : manualKind === "income" ? "儲存收入" : "儲存支出"} pending={createTransaction.isPending || createLoanPayment.isPending} disabled={manualKind === "loan_payment" && loanAccountOptions.length === 0} />
+            <FormActions onCancel={closeManualDialog} label="儲存還款" pending={createLoanPayment.isPending} disabled={loanAccountOptions.length === 0} />
           </form>
         )}
       </Dialog>

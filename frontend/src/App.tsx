@@ -651,7 +651,6 @@ function FinanceApp({ session }: { session: AuthStatus }) {
               <Route path="/accounts" element={<AccountsPage />} />
               <Route path="/transactions" element={<TransactionsPage />} />
               <Route path="/investments" element={<InvestmentsPage />} />
-              <Route path="/plans" element={<Navigate to="/" replace />} />
               <Route path="/analysis" element={<AnalysisPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />

@@ -39,7 +39,6 @@ from .database import (
     AppSetting,
     BalanceSnapshot,
     Base,
-    Budget,
     Category,
     ClassificationRule,
     LearnedClassificationRule,
@@ -47,7 +46,6 @@ from .database import (
     CreditCardPayment,
     EmailCardRule,
     FxRate,
-    Goal,
     IgnoredRecurringExpense,
     Position,
     RecurringExpense,
@@ -65,10 +63,7 @@ from .schemas import (
     AuthLogin,
     BalanceCreate,
     BinanceConnectionCreate,
-    BudgetCreate,
     FxRateCreate,
-    GoalCreate,
-    GoalUpdate,
     InvestmentTradeCreate,
     LoanPaymentCreate,
     PositionCreate,
@@ -181,9 +176,6 @@ def ensure_schema() -> None:
             add_column("accounts", "balance_includes_positions", "BOOLEAN NOT NULL DEFAULT 0")
             add_column("accounts", "auto_balance_base_twd", "NUMERIC(18, 4)")
             add_column("accounts", "owner", "VARCHAR(20) NOT NULL DEFAULT 'me'")
-            add_column("goals", "owner", "VARCHAR(20) NOT NULL DEFAULT 'me'")
-            add_column("goals", "goal_type", "VARCHAR(30) NOT NULL DEFAULT 'net_worth'")
-            add_column("goals", "account_id", "INTEGER")
             add_column("valuation_snapshots", "owner", "VARCHAR(20) NOT NULL DEFAULT 'all'")
 
         add_column("email_card_rules", "closing_day", "INTEGER")
@@ -673,18 +665,9 @@ def next_balance_amount(account: Account, current_amount: Decimal, transaction_a
 
 
 def validate_owner_filter(owner: str) -> str:
-    if owner not in {"all", "me", "partner", "shared"}:
-        raise HTTPException(422, "所有人必須是 all、me、partner 或 shared")
+    if owner not in {"all", "me", "partner"}:
+        raise HTTPException(422, "所有人必須是 all、me 或 partner")
     return owner
-
-
-GOAL_TYPES = {"net_worth", "liquid_assets", "account_balance", "investment_cost", "debt_payoff"}
-
-
-def validate_goal_type(goal_type: str) -> str:
-    if goal_type not in GOAL_TYPES:
-        raise HTTPException(422, "不支援的目標類型")
-    return goal_type
 
 
 @app.get("/api/health")
@@ -749,8 +732,8 @@ def actionable_reminders(db: DB, owner: str = "all"):
 def create_account(payload: AccountCreate, db: DB):
     if payload.nature not in {"asset", "liability"}:
         raise HTTPException(422, "帳戶性質必須是 asset 或 liability")
-    if payload.owner not in {"me", "partner", "shared"}:
-        raise HTTPException(422, "所有人必須是 me、partner 或 shared")
+    if payload.owner not in {"me", "partner"}:
+        raise HTTPException(422, "所有人必須是 me 或 partner")
     account = Account(
         name=payload.name.strip(),
         institution=payload.institution,
@@ -784,8 +767,8 @@ def update_account(account_id: int, payload: AccountUpdate, db: DB):
     for key, value in payload.model_dump(exclude_unset=True).items():
         if key == "currency" and value:
             value = value.upper()
-        if key == "owner" and value not in {"me", "partner", "shared"}:
-            raise HTTPException(422, "所有人必須是 me、partner 或 shared")
+        if key == "owner" and value not in {"me", "partner"}:
+            raise HTTPException(422, "所有人必須是 me 或 partner")
         setattr(account, key, value)
     db.flush()
     record_valuation(db)
@@ -2148,132 +2131,6 @@ def create_manual_fx(payload: FxRateCreate, db: DB):
     return {"ok": True}
 
 
-@app.get("/api/budgets")
-def list_budgets(db: DB, month: str | None = None):
-    month = month or date.today().strftime("%Y-%m")
-    rows = db.scalars(
-        select(Budget).where(Budget.month == month).order_by(Budget.id)
-    ).all()
-    start = date.fromisoformat(f"{month}-01")
-    end = (
-        date(start.year + 1, 1, 1)
-        if start.month == 12
-        else date(start.year, start.month + 1, 1)
-    )
-    result = []
-    for row in rows:
-        spent = db.scalar(
-            select(func.sum(func.abs(Transaction.base_amount))).where(
-                Transaction.category_id == row.category_id,
-                Transaction.excluded.is_(False),
-                Transaction.transaction_kind.in_(["expense", "interest"]),
-                Transaction.transaction_date >= start,
-                Transaction.transaction_date < end,
-            )
-        ) or 0
-        result.append(
-            {
-                "id": row.id,
-                "month": row.month,
-                "category_id": row.category_id,
-                "category_name": row.category.name,
-                "category_color": row.category.color,
-                "amount": float(row.amount),
-                "spent": float(spent),
-                "percentage": float(Decimal(str(spent)) / row.amount * 100),
-            }
-        )
-    return result
-
-
-@app.post("/api/budgets")
-def upsert_budget(payload: BudgetCreate, db: DB):
-    if not db.get(Category, payload.category_id):
-        raise HTTPException(404, "找不到分類")
-    row = db.scalar(
-        select(Budget).where(
-            Budget.month == payload.month, Budget.category_id == payload.category_id
-        )
-    )
-    if not row:
-        row = Budget(
-            month=payload.month, category_id=payload.category_id, amount=payload.amount
-        )
-        db.add(row)
-    else:
-        row.amount = payload.amount
-    db.commit()
-    return {"id": row.id}
-
-
-@app.delete("/api/budgets/{budget_id}")
-def delete_budget(budget_id: int, db: DB):
-    row = db.get(Budget, budget_id)
-    if not row:
-        raise HTTPException(404, "找不到預算")
-    db.delete(row)
-    db.commit()
-    return {"ok": True}
-
-
-@app.get("/api/goals")
-def list_goals(db: DB, owner: str = "all"):
-    owner = validate_owner_filter(owner)
-    query = select(Goal).order_by(Goal.completed, Goal.target_date)
-    if owner != "all":
-        query = query.where(Goal.owner == owner)
-    rows = db.scalars(query).all()
-    return [
-        {
-            "id": row.id,
-            "name": row.name,
-            "owner": row.owner,
-            "owner_label": OWNER_LABELS.get(row.owner, row.owner),
-            "goal_type": row.goal_type,
-            "account_id": row.account_id,
-            "account_name": row.account.name if row.account else None,
-            "target_amount": float(row.target_amount),
-            "current_amount": float(row.current_amount),
-            "target_date": row.target_date,
-            "currency": row.currency,
-            "completed": row.completed,
-            "note": row.note,
-            "progress": min(float(row.current_amount / row.target_amount * 100), 100),
-        }
-        for row in rows
-    ]
-
-
-@app.post("/api/goals", status_code=201)
-def create_goal(payload: GoalCreate, db: DB):
-    if payload.owner not in {"me", "partner", "shared"}:
-        raise HTTPException(422, "目標所有人必須是 me、partner 或 shared")
-    validate_goal_type(payload.goal_type)
-    if payload.account_id is not None and not db.get(Account, payload.account_id):
-        raise HTTPException(404, "找不到目標連結帳戶")
-    row = Goal(**payload.model_dump())
-    db.add(row)
-    db.commit()
-    return {"id": row.id}
-
-
-@app.patch("/api/goals/{goal_id}")
-def update_goal(goal_id: int, payload: GoalUpdate, db: DB):
-    row = db.get(Goal, goal_id)
-    if not row:
-        raise HTTPException(404, "找不到目標")
-    for key, value in payload.model_dump(exclude_unset=True).items():
-        if key == "owner" and value not in {"me", "partner", "shared"}:
-            raise HTTPException(422, "目標所有人必須是 me、partner 或 shared")
-        if key == "goal_type" and value is not None:
-            validate_goal_type(value)
-        if key == "account_id" and value is not None and not db.get(Account, value):
-            raise HTTPException(404, "找不到目標連結帳戶")
-        setattr(row, key, value)
-    db.commit()
-    return {"ok": True}
-
-
 @app.get("/api/rules")
 def list_rules(db: DB):
     default_keywords = {keyword.casefold() for keyword, _, _ in DEFAULT_RULES}
@@ -2449,8 +2306,8 @@ def list_ignored_recurring_expenses(db: DB, owner: str = "all"):
 
 @app.post("/api/recurring-expenses", status_code=201)
 def create_recurring_expense(payload: RecurringExpenseCreate, db: DB):
-    if payload.owner not in {"me", "partner", "shared"}:
-        raise HTTPException(422, "固定花費所有人必須是 me、partner 或 shared")
+    if payload.owner not in {"me", "partner"}:
+        raise HTTPException(422, "固定花費所有人必須是 me 或 partner")
     validate_recurring_expense_links(db, payload.account_id, payload.category_id)
     candidates = db.scalars(select(RecurringExpense).where(
         RecurringExpense.account_id == payload.account_id,
@@ -2496,9 +2353,8 @@ def update_recurring_expense(
     if values.get("owner") is not None and values["owner"] not in {
         "me",
         "partner",
-        "shared",
     }:
-        raise HTTPException(422, "固定花費所有人必須是 me、partner 或 shared")
+        raise HTTPException(422, "固定花費所有人必須是 me 或 partner")
     validate_recurring_expense_links(
         db,
         values.get("account_id", row.account_id),

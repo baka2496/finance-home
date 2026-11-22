@@ -31,7 +31,6 @@ from .database import (
     Account,
     AppSetting,
     BalanceSnapshot,
-    Budget,
     Category,
     ClassificationRule,
     LearnedClassificationRule,
@@ -41,7 +40,6 @@ from .database import (
     EmailCardRule,
     EmailImportRecord,
     FxRate,
-    Goal,
     IgnoredRecurringExpense,
     Position,
     PriceSnapshot,
@@ -56,7 +54,7 @@ from .database import (
 
 ZERO = Decimal("0")
 ONE = Decimal("1")
-OWNER_LABELS = {"me": "我", "partner": "小居", "shared": "共同"}
+OWNER_LABELS = {"me": "我", "partner": "小居"}
 
 DEFAULT_CATEGORIES = [
     ("薪資", "income", False, "#22c55e", "briefcase"),
@@ -1233,7 +1231,7 @@ def record_valuation(db: Session) -> ValuationSnapshot:
     ).all()
     account_items = [account_summary(db, account) for account in accounts]
     totals_by_owner: dict[str, tuple[Decimal, Decimal]] = {}
-    for owner in ("all", "me", "partner", "shared"):
+    for owner in ("all", "me", "partner"):
         selected = account_items if owner == "all" else [
             item for item in account_items if item["owner"] == owner
         ]
@@ -1324,57 +1322,28 @@ def calculate_health_score(db: Session, owner: str = "all") -> dict[str, Any]:
     for account in db.scalars(liquid_query).all():
         liquid += Decimal(str(account_summary(db, account)["total_twd"]))
 
-    current_month = end.strftime("%Y-%m")
-    budget_total = (
-        db.scalar(select(func.sum(Budget.amount)).where(Budget.month == current_month))
-        if owner == "all"
-        else None
-    )
-    current_start = end.replace(day=1)
-    current_transaction_query = select(Transaction).join(Account).where(
-        Transaction.excluded.is_(False),
-        Transaction.transaction_date >= current_start
-    )
-    if owner != "all":
-        current_transaction_query = current_transaction_query.where(Account.owner == owner)
-    current_spend = sum(
-        (
-            abs(decimal_value(tx.base_amount))
-            for tx in db.scalars(current_transaction_query).all()
-            if tx.id not in linked_ids
-            if tx.transaction_kind in {"expense", "interest"}
-        ),
-        ZERO,
-    )
-
     components = []
 
     def add_component(
-        key: str, label: str, value: Decimal | None, score: Decimal | None, detail: str
+        key: str, label: str, value: Decimal | None, detail: str
     ) -> None:
         components.append(
             {
                 "key": key,
                 "label": label,
                 "value": float(value) if value is not None else None,
-                "score": float(max(ZERO, min(Decimal("20"), score))) if score is not None else None,
                 "detail": detail,
             }
         )
 
     if income > 0:
         rate = (income - expenses) / income * 100
-        add_component("savings", "儲蓄率", rate, rate, "20% 以上為滿分")
+        add_component("savings", "儲蓄率", rate, "近 90 天平均收入中留下的比例")
         debt_ratio = debt_payments / income * 100
-        debt_score = (Decimal("50") - debt_ratio) / Decimal("30") * Decimal("20")
-        add_component("debt", "債務支出比", debt_ratio, debt_score, "20% 以下為滿分")
-        essential_ratio = essential / income * 100
-        essential_score = (Decimal("80") - essential_ratio) / Decimal("30") * Decimal("20")
-        add_component("essential", "必要支出比", essential_ratio, essential_score, "50% 以下為滿分")
+        add_component("debt", "負債支出比", debt_ratio, "每月還款占收入的比例")
     else:
-        add_component("savings", "儲蓄率", None, None, "需要近 90 天收入資料")
-        add_component("debt", "債務支出比", None, None, "需要近 90 天收入資料")
-        add_component("essential", "必要支出比", None, None, "需要近 90 天收入資料")
+        add_component("savings", "儲蓄率", None, "需要近 90 天收入資料")
+        add_component("debt", "負債支出比", None, "需要近 90 天收入資料")
 
     if essential > 0:
         emergency_months = liquid / essential
@@ -1382,30 +1351,13 @@ def calculate_health_score(db: Session, owner: str = "all") -> dict[str, Any]:
             "emergency",
             "緊急預備金",
             emergency_months,
-            emergency_months / Decimal("6") * Decimal("20"),
-            "6 個月以上為滿分",
+            "流動資產可支應必要支出的時間",
         )
     else:
-        add_component("emergency", "緊急預備金", None, None, "需要必要支出與流動資產資料")
+        add_component("emergency", "緊急預備金", None, "需要必要支出與流動資產資料")
 
-    if budget_total and Decimal(str(budget_total)) > 0:
-        ratio = current_spend / Decimal(str(budget_total)) * 100
-        budget_score = (Decimal("130") - ratio) / Decimal("30") * Decimal("20")
-        if ratio <= 100:
-            budget_score = Decimal("20")
-        add_component("budget", "預算遵守度", ratio, budget_score, "支出不超過預算為滿分")
-    else:
-        budget_detail = "個人範圍尚未支援獨立預算" if owner != "all" else "尚未設定本月預算"
-        add_component("budget", "預算遵守度", None, None, budget_detail)
-
-    available = [item for item in components if item["score"] is not None]
-    overall = (
-        sum(Decimal(str(item["score"])) for item in available) / (Decimal(len(available)) * 20) * 100
-        if len(available) >= 3
-        else None
-    )
+    available = [item for item in components if item["value"] is not None]
     return {
-        "score": round(float(overall), 1) if overall is not None else None,
         "completeness": len(available),
         "components": components,
     }
@@ -4416,21 +4368,6 @@ def seed_demo(db: Session) -> None:
                 source="demo",
             )
         )
-    db.add(
-        Budget(
-            month=today.strftime("%Y-%m"),
-            category_id=categories["餐飲"],
-            amount=Decimal("6000"),
-        )
-    )
-    db.add(
-        Goal(
-            name="日本旅行基金",
-            target_amount=Decimal("80000"),
-            current_amount=Decimal("32000"),
-            target_date=today + timedelta(days=240),
-        )
-    )
     db.flush()
     record_valuation(db)
     db.commit()
@@ -4465,8 +4402,6 @@ BACKUP_MODELS = [
     Position,
     PriceSnapshot,
     FxRate,
-    Budget,
-    Goal,
     RecurringExpense,
     IgnoredRecurringExpense,
     ValuationSnapshot,
@@ -4494,11 +4429,14 @@ def export_backup(db: Session) -> dict[str, Any]:
     }
 
 
+LEGACY_BACKUP_TABLES = {"budgets", "goals"}
+
+
 def restore_backup(db: Session, payload: dict[str, Any]) -> dict[str, int]:
     if payload.get("version") != 1 or not isinstance(payload.get("data"), dict):
         raise ValueError("不支援的備份格式")
     data = payload["data"]
-    known_tables = {model.__tablename__ for model in BACKUP_MODELS}
+    known_tables = {model.__tablename__ for model in BACKUP_MODELS} | LEGACY_BACKUP_TABLES
     if not set(data).issubset(known_tables):
         raise ValueError("備份包含未知資料表")
 

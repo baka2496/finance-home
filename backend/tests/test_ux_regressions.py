@@ -75,7 +75,7 @@ def test_schema_upgrade_is_idempotent_and_preserves_old_rows(monkeypatch):
     from sqlalchemy import create_engine, text, inspect
     import app.main as main
     old_engine = create_engine("sqlite://")
-    tables = ["transactions", "accounts", "goals", "valuation_snapshots", "email_card_rules", "credit_card_bills", "recurring_expenses"]
+    tables = ["transactions", "accounts", "valuation_snapshots", "email_card_rules", "credit_card_bills", "recurring_expenses"]
     with old_engine.begin() as conn:
         for table in tables:
             conn.execute(text(f"CREATE TABLE {table} (id INTEGER PRIMARY KEY)"))
@@ -270,3 +270,25 @@ def test_category_learning_is_explicit_account_scoped_and_future_only(client):
     learned = next(row for row in client.get("/api/rules").json() if row["id"] < 0)
     assert learned["account_name"] == "我的卡"
     assert client.delete(f"/api/rules/{learned['id']}").status_code == 200
+
+
+def test_removed_budgets_goals_overall_score_and_shared_owner_stay_removed(client):
+    assert not any(getattr(route, "path", "").startswith(("/api/budgets", "/api/goals")) for route in app.routes)
+    assert client.post("/api/budgets", json={"month": "2026-08", "category_id": 1, "amount": 5000}).status_code in {404, 405}
+    assert client.post("/api/goals", json={"name": "目標", "target_amount": 10000}).status_code in {404, 405}
+    assert client.get("/api/accounts?owner=shared").status_code == 422
+    assert client.post("/api/accounts", json={"name": "共同帳戶", "account_type": "bank", "owner": "shared"}).status_code == 422
+    health = client.get("/api/analysis/health").json()
+    assert "score" not in health
+    assert [item["key"] for item in health["components"]] == ["savings", "debt", "emergency"]
+    assert all("score" not in item for item in health["components"])
+    # Old backups that still contain legacy budgets/goals tables must restore cleanly.
+    backup = client.get("/api/backup/export").json()
+    assert "budgets" not in backup["data"] and "goals" not in backup["data"]
+    backup["data"]["budgets"] = [{"id": 1, "month": "2026-08", "category_id": 1, "amount": "6000"}]
+    backup["data"]["goals"] = [{"id": 1, "name": "舊目標", "target_amount": "80000", "current_amount": "10000"}]
+    restored = client.post(
+        "/api/backup/restore",
+        files={"file": ("legacy-backup.json", json.dumps(backup).encode(), "application/json")},
+    )
+    assert restored.status_code == 200, restored.text

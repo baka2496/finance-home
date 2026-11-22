@@ -5,7 +5,7 @@ export interface Account {
   account_type: string;
   nature: "asset" | "liability";
   currency: string;
-  owner: "me" | "partner" | "shared";
+  owner: "me" | "partner";
   owner_label: string;
   is_liquid: boolean;
   balance_includes_positions: boolean;
@@ -23,7 +23,7 @@ export interface Account {
 }
 
 export interface Dashboard {
-  owner: "all" | "me" | "partner" | "shared";
+  owner: "all" | "me" | "partner";
   owner_label: string;
   assets: number;
   liabilities: number;
@@ -85,7 +85,7 @@ export interface Position {
   id: number;
   account_id: number;
   account_name: string;
-  owner: "me" | "partner" | "shared";
+  owner: "me" | "partner";
   owner_label: string;
   market: string;
   symbol: string;
@@ -115,32 +115,19 @@ export interface Position {
   profit_pct?: number;
 }
 
-export interface Budget {
-  id: number;
-  month: string;
-  category_id: number;
-  category_name: string;
-  category_color: string;
-  amount: number;
-  spent: number;
-  percentage: number;
-}
-
 export interface HealthScore {
-  score: number | null;
   completeness: number;
   components: {
     key: string;
     label: string;
     value: number | null;
-    score: number | null;
     detail: string;
   }[];
 }
 
 export interface SpendingAnalysis {
   month: string;
-  owner: "all" | "me" | "partner" | "shared";
+  owner: "all" | "me" | "partner";
   month_expense: number;
   category_expenses: { name: string; color: string; value: number }[];
   recurring_expenses: {
@@ -150,7 +137,7 @@ export interface SpendingAnalysis {
     account_name: string;
     category_id: number | null;
     category_name: string;
-    owner: "me" | "partner" | "shared" | null;
+    owner: "me" | "partner" | null;
     average_amount: number;
     current_month_amount: number;
     months_detected: number;
@@ -169,7 +156,7 @@ export interface RecurringExpenseDefinition {
   id: number;
   name: string;
   match_name?: string | null;
-  owner: "me" | "partner" | "shared";
+  owner: "me" | "partner";
   amount: number;
   due_day: number | null;
   account_id: number | null;
@@ -183,7 +170,7 @@ export interface RecurringExpenseDefinition {
 export interface IgnoredRecurringExpense {
   id: number;
   name: string;
-  owner: "me" | "partner" | "shared";
+  owner: "me" | "partner";
   owner_label: string;
   account_id: number;
   account_name: string;

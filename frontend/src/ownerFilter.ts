@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export type OwnerFilter = "all" | "me" | "partner" | "shared";
+export type OwnerFilter = "all" | "me" | "partner";
 
 const storageKey = "finance:ownerFilter";
 const selectableOwners = new Set<OwnerFilter>(["all", "me", "partner"]);
@@ -16,7 +16,6 @@ export const ownerFilterLabels: Record<OwnerFilter, string> = {
   all: "全部",
   me: "我",
   partner: "小居",
-  shared: "共同",
 };
 
 function readStoredOwnerFilter(fallback: OwnerFilter): OwnerFilter {

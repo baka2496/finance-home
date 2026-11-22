@@ -250,7 +250,7 @@ export default function AnalysisPage() {
       <PageHeader
         eyebrow="分析"
         title="財務健康分析"
-        description="用透明公式檢視現金流、預備金、負債與預算執行情況。"
+        description="用透明公式檢視現金流、預備金、負債與每月消費分布。"
       />
 
       {!primaryError && (health.isError || dashboard.isError) && <p role="alert" className="mb-4 text-amber-800">更新失敗，目前保留上次的分析。<Button onClick={() => { health.refetch(); dashboard.refetch(); }}>重試</Button></p>}
@@ -782,22 +782,18 @@ export function makeRecommendations(health?: HealthScore) {
   const savings = byKey.savings?.value;
   const emergency = byKey.emergency?.value;
   const debt = byKey.debt?.value;
-  const budget = byKey.budget?.value;
   if (typeof savings === "number" && savings < 20) {
-    result.push(`目前儲蓄率約 ${number(savings, 1)}%，可先從最高的非必要支出分類設定預算。`);
+    result.push(`目前儲蓄率約 ${number(savings, 1)}%，可先從最高的非必要支出分類開始調整。`);
   }
   if (typeof emergency === "number" && emergency < 3) {
     result.push(`緊急預備金約可支撐 ${number(emergency, 1)} 個月，建議先以 3 個月必要支出為短期目標。`);
   }
   if (typeof debt === "number" && debt > 30) {
-    result.push(`債務支出比為 ${number(debt, 1)}%，新增負債前應先降低每月還款壓力。`);
-  }
-  if (typeof budget === "number" && budget > 100) {
-    result.push(`本月已超出整體預算 ${number(budget - 100, 1)}%，檢查是否有一次性支出需要另外規劃。`);
+    result.push(`負債支出比為 ${number(debt, 1)}%，新增負債前應先降低每月還款壓力。`);
   }
   const hasIncomeBasedIndicator = typeof savings === "number" || typeof debt === "number";
   if (!hasIncomeBasedIndicator) {
-    result.push("補上最近三個月的收入交易，才能計算儲蓄率、必要支出比與債務支出比。");
+    result.push("補上最近三個月的收入交易，才能計算儲蓄率與負債支出比。");
   }
   return result.slice(0, 3);
 }
