@@ -27,37 +27,63 @@ export function Card({
   ...props
 }: HTMLAttributes<HTMLElement>) {
   return (
-    <section {...props} className={cn("rounded-2xl border border-slate-200/80 bg-white shadow-soft", className)}>
+    <section {...props} className={cn("card-surface rounded-3xl bg-white shadow-soft", className)}>
       {children}
     </section>
   );
 }
 
-/** One headline number in the black-and-white style: small grey label, large ink figure, quiet note. */
+const figureIconTones = {
+  green: "bg-emerald-50 text-emerald-700",
+  red: "bg-red-50 text-red-600",
+  accent: "bg-accent-soft text-accent",
+  amber: "bg-amber-50 text-amber-600",
+  slate: "bg-slate-100 text-slate-600",
+};
+
+/** A large amount with the currency code ("TWD", "USD") shown small and grey in front of the number. */
+export function Amount({ value, className }: { value: string; className?: string }) {
+  const match = /^([A-Z]{3,5}) (.*)$/.exec(value);
+  if (!match) return <span className={className}>{value}</span>;
+  const [, currency, digits] = match;
+  return (
+    <span className={className}>
+      <span className="mr-[0.3em] align-baseline text-[0.5em] font-medium tracking-normal text-slate-400">{currency}</span>
+      {digits}
+    </span>
+  );
+}
+
+/** One headline number as a small white tile: tinted icon, grey label, large figure, quiet note. */
 export function Figure({
   label,
   value,
   subtext,
   tone = "ink",
+  icon,
+  iconTone = "accent",
   className,
 }: {
   label: string;
   value: ReactNode;
   subtext?: ReactNode;
   tone?: "ink" | "positive" | "negative";
+  icon?: ReactNode;
+  iconTone?: keyof typeof figureIconTones;
   className?: string;
 }) {
   const tones = { ink: "text-ink", positive: "text-emerald-700", negative: "text-red-600" };
   return (
-    <div className={cn("min-w-0 border-slate-200 py-4", className)}>
-      <p className="text-xs text-slate-500">{label}</p>
-      <p className={cn("mt-1 truncate font-display text-xl font-semibold tracking-tight tabular-nums sm:text-2xl", tones[tone])}>{value}</p>
-      {subtext && <p className="mt-1 text-xs text-slate-400">{subtext}</p>}
+    <div className={cn("card-surface min-w-0 rounded-2xl bg-white p-4 shadow-soft sm:p-5", className)}>
+      {icon && <span className={cn("mb-3 grid size-8 place-items-center rounded-[10px]", figureIconTones[iconTone])}>{icon}</span>}
+      <p className="text-xs text-slate-500 sm:text-[13px]">{label}</p>
+      <p className={cn("mt-1 truncate font-display text-xl font-semibold tracking-tight tabular-nums sm:text-2xl", tones[tone])}>{typeof value === "string" ? <Amount value={value} /> : value}</p>
+      {subtext && <p className="mt-1 truncate text-xs text-slate-400">{subtext}</p>}
     </div>
   );
 }
 
-/** A row of Figures under a black top rule, split by hairlines instead of boxed cards. */
+/** A grid of Figure tiles. Pass column classes (e.g. "grid-cols-2 xl:grid-cols-4") per page. */
 export function FigureRow({
   children,
   label,
@@ -68,13 +94,7 @@ export function FigureRow({
   className?: string;
 }) {
   return (
-    <section
-      aria-label={label}
-      className={cn(
-        "mb-6 grid grid-cols-1 divide-y divide-slate-200 border-y border-b-slate-200 border-t-ink sm:auto-cols-fr sm:grid-flow-col sm:divide-x sm:divide-y-0 sm:[&>*]:px-5 sm:[&>*:first-child]:pl-0 sm:[&>*:last-child]:pr-0",
-        className,
-      )}
-    >
+    <section aria-label={label} className={cn("mb-6 grid grid-cols-1 gap-3", className)}>
       {children}
     </section>
   );
@@ -89,8 +109,8 @@ export function Button({
   variant?: "primary" | "secondary" | "ghost" | "danger";
 }) {
   const styles = {
-    primary: "bg-forest text-white hover:bg-slate-800",
-    secondary: "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
+    primary: "bg-forest text-white shadow-sm hover:bg-slate-800",
+    secondary: "bg-white text-slate-700 shadow-soft ring-1 ring-slate-200/70 hover:bg-slate-50",
     ghost: "text-slate-600 hover:bg-slate-100",
     danger: "bg-red-50 text-red-700 hover:bg-red-100",
   };
@@ -98,7 +118,7 @@ export function Button({
     <button
       type={type}
       className={cn(
-        "inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex h-10 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50",
         styles[variant],
         className,
       )}
@@ -362,7 +382,7 @@ export function DateInput({
                 disabled={unavailable}
                 className={cn(
                   "relative flex aspect-square items-center justify-center rounded-xl text-sm tabular-nums transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-25",
-                  selected && "bg-forest font-semibold text-white hover:bg-forest",
+                  selected && "bg-accent font-semibold text-white hover:bg-accent",
                   !selected && isToday && "font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-300",
                 )}
                 aria-label={`${viewYear}年${viewMonth}月${currentDay}日`}
@@ -469,7 +489,7 @@ export function MonthInput({
                 disabled={unavailable}
                 className={cn(
                   "rounded-xl px-2 py-3 text-sm font-medium transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-25",
-                  selected && "bg-forest text-white hover:bg-forest",
+                  selected && "bg-accent text-white hover:bg-accent",
                   !selected && isCurrent && "text-emerald-700 ring-1 ring-inset ring-emerald-300",
                 )}
                 aria-pressed={selected}
@@ -834,7 +854,7 @@ export function EmptyState({
 }) {
   return (
     <div className="flex min-h-56 flex-col items-center justify-center px-6 text-center">
-      <div className="mb-4 rounded-full border border-slate-200 p-4 text-ink">{icon}</div>
+      <div className="mb-4 rounded-2xl bg-accent-soft p-4 text-accent">{icon}</div>
       <h3 className="font-semibold text-slate-800">{title}</h3>
       <p className="mt-1 max-w-md text-sm leading-6 text-slate-500">{description}</p>
       {action && <div className="mt-5">{action}</div>}
@@ -857,27 +877,35 @@ export function PageHeader({
     <header className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
       <div>
         {eyebrow && (
-          <p className="mb-2 text-xs font-medium tracking-[.2em] text-slate-500">{eyebrow}</p>
+          <p className="mb-1 text-[13px] font-medium text-slate-500">{eyebrow}</p>
         )}
-        <h1 className="text-3xl font-semibold tracking-tight text-ink">{title}</h1>
-        <p className="mt-2 text-sm text-slate-500">{description}</p>
+        <h1 className="text-[28px] font-bold leading-tight tracking-tight text-ink sm:text-3xl">{title}</h1>
+        <p className="mt-1.5 text-sm text-slate-500">{description}</p>
       </div>
       {action}
     </header>
   );
 }
 
-export const money = (value: number, currency = "TWD") => {
+/**
+ * Money is written the way Taiwanese bank accounts show it: the currency code, a space,
+ * then the number with its sign, e.g. "TWD 12,345", "TWD −1,280", "USD 67,000.00".
+ * `signed` adds "+" to positive amounts; only use it where colour does not already show the direction.
+ */
+export const money = (value: number, currency = "TWD", options: { signed?: boolean } = {}) => {
   const amount = value || 0;
-  if (currency === "TWD") {
-    const sign = amount < 0 ? "-" : "";
-    return `${sign}NT$${new Intl.NumberFormat("zh-TW", { maximumFractionDigits: 0 }).format(Math.abs(amount))}`;
+  const code = (currency || "TWD").toUpperCase();
+  let decimals = 0;
+  if (code !== "TWD") {
+    try {
+      decimals = new Intl.NumberFormat("en-US", { style: "currency", currency: code }).resolvedOptions().minimumFractionDigits ?? 2;
+    } catch {
+      decimals = 2;
+    }
   }
-  return new Intl.NumberFormat("zh-TW", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 2,
-  }).format(amount);
+  const digits = new Intl.NumberFormat("zh-TW", { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(Math.abs(amount));
+  const sign = amount < 0 ? "−" : options.signed && amount > 0 ? "+" : "";
+  return `${code} ${sign}${digits}`;
 };
 
 export const number = (value: number, digits = 0) =>
@@ -895,7 +923,7 @@ export function Badge({
     green: "bg-emerald-50 text-emerald-700",
     amber: "bg-amber-50 text-amber-700",
     red: "bg-red-50 text-red-700",
-    blue: "bg-slate-100 text-ink",
+    blue: "bg-accent-soft text-accent",
   };
   return <span className={cn("inline-flex rounded-full px-2.5 py-1 text-xs font-medium", tones[tone])}>{children}</span>;
 }

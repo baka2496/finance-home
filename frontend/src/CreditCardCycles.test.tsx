@@ -25,8 +25,8 @@ it("shows recorded payments against debt even without a formal statement", () =>
   render(<MemoryRouter><CreditCardCycles accountIds={[9]} cycles={[cycle]} /></MemoryRouter>);
   fireEvent.click(screen.getByText("信用卡"));
   expect(screen.getByText("待核對欠款")).toBeTruthy();
-  expect(screen.getByText("NT$11,188")).toBeTruthy();
-  expect(screen.getByText("已沖抵 NT$5,000")).toBeTruthy();
+  expect(screen.getByText("TWD 11,188")).toBeTruthy();
+  expect(screen.getByText("已沖抵 TWD 5,000")).toBeTruthy();
   expect(screen.getByText("財務居已記帳，請以銀行紀錄為準")).toBeTruthy();
 });
 
@@ -43,7 +43,7 @@ it("shows the remaining formal statement and partial payment status", () => {
     },
   }]} /></MemoryRouter>);
   fireEvent.click(screen.getByText("信用卡"));
-  expect(screen.getByText("NT$7,000")).toBeTruthy();
+  expect(screen.getByText("TWD 7,000")).toBeTruthy();
   expect(screen.getByText("部分已記錄")).toBeTruthy();
 });
 

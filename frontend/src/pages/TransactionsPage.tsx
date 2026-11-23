@@ -818,7 +818,7 @@ export default function TransactionsPage() {
                           <p className="mt-0.5 truncate text-xs text-slate-400">{transaction.account_name}</p>
                         </div>
                         <p className={`shrink-0 font-bold ${transaction.base_amount >= 0 ? "text-emerald-700" : "text-slate-800"}`}>
-                          {transaction.base_amount >= 0 ? "+" : "−"}{money(Math.abs(transaction.base_amount))}
+                          {money(transaction.base_amount)}
                         </p>
                       </div>
                       <div className="mt-3 flex items-center justify-between gap-3 text-xs text-slate-500">
@@ -900,8 +900,7 @@ export default function TransactionsPage() {
                       <TransactionCategory transaction={transaction} categories={categories.data || []} onSaved={onCategorySaved} />
                     </td>
                     <td className={`whitespace-nowrap px-5 py-3 text-right text-sm font-semibold tabular-nums ${transaction.base_amount >= 0 ? "text-emerald-700" : "text-slate-800"}`}>
-                      {transaction.base_amount >= 0 ? "+" : "−"}
-                      {money(Math.abs(transaction.base_amount))}
+                      {money(transaction.base_amount)}
                       {transaction.currency !== "TWD" && (
                         <div className="mt-1 text-xs font-normal text-slate-400">
                           {money(Math.abs(transaction.amount), transaction.currency)}

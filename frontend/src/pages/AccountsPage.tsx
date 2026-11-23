@@ -23,6 +23,7 @@ import { daysBetweenDateValues, taipeiDateInputValue } from "../date";
 import { useOwnerFilter } from "../ownerFilter";
 import type { Account } from "../types";
 import {
+  Amount,
   Badge,
   Button,
   Card,
@@ -642,7 +643,7 @@ export default function AccountsPage() {
                     setBalanceAccount(account);
                   }}
                 >
-                  <span className="grid size-11 shrink-0 place-items-center rounded-full border border-slate-200 text-ink">
+                  <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-accent-soft text-accent">
                     <Icon size={19} />
                   </span>
                   <span className="min-w-0 flex-1">
@@ -720,7 +721,7 @@ export default function AccountsPage() {
           <form className="space-y-4" onSubmit={submitCardPayment}>
             <div className="rounded-xl bg-slate-50 p-4">
               <p className="text-xs text-slate-500">目前欠款</p>
-              <p className="mt-1 font-display text-xl font-semibold tracking-tight text-slate-800">{money(Math.abs(cardPaymentAccount.balance), cardPaymentAccount.currency)}</p>
+              <p className="mt-1 font-display text-xl font-semibold tracking-tight text-slate-800"><Amount value={money(Math.abs(cardPaymentAccount.balance), cardPaymentAccount.currency)} /></p>
               <p className="mt-1 text-xs text-slate-500">
                 {cardPaymentCycle?.current_bill
                   ? `正式帳單剩餘 ${money(cardPaymentCycle.current_bill.remaining_due ?? cardPaymentCycle.current_bill.amount_due, cardPaymentAccount.currency)}`
@@ -857,7 +858,7 @@ export default function AccountsPage() {
           <div className="space-y-4">
             <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
               <p className="text-xs font-medium text-slate-400">帳戶總價值</p>
-              <p className="mt-1 font-display text-2xl font-semibold tracking-tight text-ink">{money(Math.abs(detailAccount.total_twd))}</p>
+              <p className="mt-1 font-display text-2xl font-semibold tracking-tight text-ink"><Amount value={money(Math.abs(detailAccount.total_twd))} /></p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-2xl border border-slate-100 p-4">
@@ -961,7 +962,7 @@ function AccountGroup({
             <Card key={account.id} className="overflow-hidden" aria-label={`${account.name} 帳戶摘要`}>
               <div className="p-5">
                 <div className="flex items-start gap-4">
-                  <div className="grid size-11 shrink-0 place-items-center rounded-full border border-slate-200 text-ink">
+                  <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-accent-soft text-accent">
                     <Icon size={21} />
                   </div>
                   <div className="min-w-0">
@@ -980,7 +981,7 @@ function AccountGroup({
                     {account.nature === "asset" ? "帳戶總價值" : isCreditCard ? "目前欠款" : "目前負債"}
                   </p>
                   <p className={`mt-1 font-display text-2xl font-semibold tracking-tight ${account.nature === "liability" ? "text-red-600" : "text-ink"}`}>
-                    {money(Math.abs(account.total_twd))}
+                    <Amount value={money(Math.abs(account.total_twd))} />
                   </p>
                 </div>
                 {isCreditCard && cardCyclesLoading && (

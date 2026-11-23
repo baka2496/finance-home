@@ -11,6 +11,7 @@ import {
   RefreshCw,
   Trash2,
   TrendingDown,
+  Wallet,
   TrendingUp,
 } from "lucide-react";
 import { api } from "../api";
@@ -638,21 +639,25 @@ export default function InvestmentsPage() {
         </div>
       ) : (
         <>
-      <FigureRow label="投資摘要">
+      <FigureRow label="投資摘要" className="sm:grid-cols-3">
         <Figure
+          icon={<LineChart size={17} />}
+          iconTone="accent"
           label="現貨與股票市值（折合 TWD）"
           value={money(totalValue)}
           subtext={`${positions.data?.length || 0} 項持倉${totals.futures ? `，含 ${totals.futures} 項合約` : ""}`}
         />
-        <Figure label="現貨與股票成本（折合 TWD）" value={money(totalCost)} subtext="合約名目價值不計入成本與總市值" />
+        <Figure icon={<Wallet size={17} />} iconTone="slate" label="現貨與股票成本（折合 TWD）" value={money(totalCost)} subtext="合約名目價值不計入成本與總市值" />
         <Figure
+          icon={totalProfit >= 0 ? <TrendingUp size={17} /> : <TrendingDown size={17} />}
+          iconTone={totalProfit >= 0 ? "green" : "red"}
           label="未實現損益（折合 TWD）"
-          value={`${totalProfit >= 0 ? "+" : ""}${money(totalProfit)}`}
+          value={money(totalProfit)}
           tone={totalProfit >= 0 ? "positive" : "negative"}
           subtext={totals.futures
             ? "含幣安合約未實現損益"
             : totalCost
-              ? `${totalProfit >= 0 ? "+" : ""}${number((totalProfit / totalCost) * 100, 2)}%`
+              ? `${number((totalProfit / totalCost) * 100, 2)}%`
               : "尚無成本資料"}
         />
       </FigureRow>
@@ -679,7 +684,7 @@ export default function InvestmentsPage() {
                   type="button"
                   role="tab"
                   aria-selected={positionFilter === option.value}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${positionFilter === option.value ? "bg-forest text-white" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${positionFilter === option.value ? "bg-accent text-white" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
                   onClick={() => setPositionFilter(option.value)}
                 >
                   {option.label} <span className={positionFilter === option.value ? "text-slate-300" : "text-slate-400"}>({option.count})</span>
@@ -699,7 +704,7 @@ export default function InvestmentsPage() {
               <details key={position.id} className="group px-4 py-4">
                 <summary className="cursor-pointer list-none">
                   <div className="flex items-start gap-3">
-                    <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-slate-100 text-ink">
+                    <div className={`grid size-11 shrink-0 place-items-center rounded-xl ${position.market === "CRYPTO" || position.instrument_type === "futures" ? "bg-amber-50 text-amber-600" : "bg-accent-soft text-accent"}`}>
                       {position.market === "CRYPTO" || position.instrument_type === "futures" ? <Bitcoin size={19} /> : <LineChart size={19} />}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -718,7 +723,7 @@ export default function InvestmentsPage() {
                             {position.instrument_type === "futures" ? "名目 " : ""}{money(position.market_value_twd)}
                           </p>
                           <p className={`mt-0.5 text-xs font-semibold ${position.profit_twd >= 0 ? "text-emerald-700" : "text-red-600"}`}>
-                            {position.profit_twd >= 0 ? "+" : ""}{money(position.profit_twd)}
+                            {money(position.profit_twd)}
                             {position.instrument_type !== "futures" ? ` · ${number(position.profit_pct || 0, 2)}%` : ""}
                           </p>
                         </div>
@@ -810,7 +815,7 @@ export default function InvestmentsPage() {
                   <tr key={position.id} className="hover:bg-slate-50/60">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="grid size-10 place-items-center rounded-xl bg-slate-100 text-ink">
+                        <div className={`grid size-10 place-items-center rounded-xl ${position.market === "CRYPTO" || position.instrument_type === "futures" ? "bg-amber-50 text-amber-600" : "bg-accent-soft text-accent"}`}>
                           {position.market === "CRYPTO" || position.instrument_type === "futures" ? <Bitcoin size={18} /> : <LineChart size={18} />}
                         </div>
                         <div>
@@ -852,7 +857,7 @@ export default function InvestmentsPage() {
                     </td>
                     <td className="px-4 py-4 text-right">
                       <p className={`text-sm font-bold ${position.profit_twd >= 0 ? "text-emerald-700" : "text-red-600"}`}>
-                        {position.profit_twd >= 0 ? "+" : ""}{money(position.profit_twd)}
+                        {money(position.profit_twd)}
                       </p>
                       {position.instrument_type !== "futures" && position.profit_pct !== undefined && (
                         <p className={`mt-1 inline-flex items-center gap-1 text-xs ${position.profit_twd >= 0 ? "text-emerald-600" : "text-red-500"}`}>
@@ -1180,7 +1185,7 @@ export default function InvestmentsPage() {
                   • {selectedCashAccount.name}：
                   {balanceIncludesPositions
                     ? "帳戶總額不重複變動"
-                    : `${tradeSide === "buy" ? "−" : "+"}${money(tradeTotalValue, selectedCurrency)}`}
+                    : money(tradeSide === "buy" ? -tradeTotalValue : tradeTotalValue, selectedCurrency, { signed: true })}
                 </p>
                 <p>• 不會列入日常收入或支出</p>
               </div>

@@ -9,7 +9,7 @@ import QuickTransactionForm from "./QuickTransactionForm";
 import { priceSourceLabel } from "./pages/InvestmentsPage";
 import { chartThemeFor } from "./chartTheme";
 import type { Account, Category } from "./types";
-import { Button, Dialog } from "./ui";
+import { Amount, Button, Dialog, money } from "./ui";
 
 afterEach(() => { cleanup(); sessionStorage.clear(); localStorage.clear(); });
 
@@ -117,65 +117,124 @@ describe("adding a transaction", () => {
   });
 });
 
-describe("the black-and-white style stays consistent", () => {
-  // 2026-11: the user picked style B (ink on paper, one lime accent).
-  it("pages and shared parts take chart colors from useChartTheme instead of hard-coding the old greens", () => {
-    const sources = [...pageSources, { name: "ui.tsx", source: readFileSync(join(srcDir, "ui.tsx"), "utf8") }];
+describe("the chosen look stays consistent", () => {
+  // 2026-11-23: the user picked "A 清透卡片" for light mode and "C 深色高級" for dark mode,
+  // after rejecting several flatter styles as having no sense of quality.
+  const css = readFileSync(join(srcDir, "index.css"), "utf8");
+  const tailwind = readFileSync(join(srcDir, "..", "tailwind.config.js"), "utf8");
+  const ui = readFileSync(join(srcDir, "ui.tsx"), "utf8");
+  const page = (name: string) => pageSources.find((item) => item.name === name)!.source;
+
+  it("pages and shared parts never hard-code the retired greens", () => {
+    const sources = [...pageSources, { name: "ui.tsx", source: ui }];
     for (const { name, source } of sources) {
       expect(source, name).not.toMatch(/#(23845f|167a5a|4ecb9b|153b32|e8eeeb|f1a15b)/i);
     }
+    expect(css).not.toMatch(/#(047857|ecfdf5|d7f75b)/i);
   });
 
-  it("chart colors stay readable in dark mode", () => {
+  it("light mode is A: grey canvas, white cards with a soft shadow, indigo accent", () => {
+    expect(tailwind).toContain('canvas: "#f4f4f6"');
+    expect(tailwind).toMatch(/accent: \{\s*DEFAULT: "#5b6cf0"/);
+    expect(tailwind).toMatch(/soft: "0 1px 2px rgb\(0 0 0 \/ 4%\), 0 8px 24px rgb\(0 0 0 \/ 5%\)"/);
+    expect(ui).toContain('"card-surface rounded-3xl bg-white shadow-soft"');
+  });
+
+  it("dark mode is C: warm dark gradient, raised cards and champagne gold", () => {
+    expect(css).toMatch(/\.dark body \{\s*background: radial-gradient\(/);
+    expect(css).toMatch(/\.dark \.card-surface \{[^}]*linear-gradient/);
+    expect(css).toMatch(/\.dark \.bg-forest,\s*\.dark \.bg-accent \{\s*background-color: #d9bf8c;\s*color: #1a1917;/);
+    expect(css).toMatch(/\.dark \.text-accent \{\s*color: #d9bf8c;/);
+  });
+
+  it("chart colors follow the mode and stay readable", () => {
     const light = chartThemeFor("light");
     const dark = chartThemeFor("dark");
-    expect(light.ink).not.toBe(dark.ink);
-    expect(dark.ink).not.toBe("#111111");
-    expect(dark.categorical[0]).toBe(dark.ink);
-  });
-
-  it("text on the lime accent is pinned to ink so dark mode cannot turn it light", () => {
-    const dashboard = pageSources.find((page) => page.name === "DashboardPage.tsx")!.source;
-    expect(dashboard).toMatch(/bg-lime[^"]*text-\[#111111\]/);
-  });
-
-  it("the overview leads with one large net-worth figure", () => {
-    const dashboard = pageSources.find((page) => page.name === "DashboardPage.tsx")!.source;
-    expect(dashboard).toMatch(/aria-label="淨資產"[\s\S]*font-display text-5xl/);
+    expect(light.ink).toBe("#5b6cf0");
+    expect(dark.ink).toBe("#d9bf8c");
+    expect(new Set(light.categorical).size).toBe(light.categorical.length);
+    expect(new Set(dark.categorical).size).toBe(dark.categorical.length);
   });
 
   it("uses the chosen fonts: Inter for numbers and Latin text, 昭源黑體 (Chiron Hei HK) for Chinese", () => {
-    const tailwind = readFileSync(join(srcDir, "..", "tailwind.config.js"), "utf8");
-    const css = readFileSync(join(srcDir, "index.css"), "utf8");
     expect(tailwind).toMatch(/sans: \["Inter", '"Chiron Hei HK"'/);
     expect(tailwind).toMatch(/display: \["Inter", '"Chiron Hei HK"'/);
     expect(css).toContain("family=Chiron+Hei+HK");
     expect(tailwind + css).not.toMatch(/Space.Grotesk/);
   });
 
-  it("pages use no decorative blue/purple/sky/orange tints; color is kept for meaning (income, warnings, errors)", () => {
-    const sources = [
-      ...pageSources,
-      { name: "ui.tsx", source: readFileSync(join(srcDir, "ui.tsx"), "utf8") },
-      { name: "App.tsx", source: readFileSync(join(srcDir, "App.tsx"), "utf8") },
-    ];
-    for (const { name, source } of sources) {
-      expect(source, name).not.toMatch(/\b(bg|text|border|from)-(blue|sky|violet|purple|orange|indigo)-\d/);
+  it("the overview leads with a net-worth card, tinted figure tiles and recent transactions", () => {
+    const dashboard = page("DashboardPage.tsx");
+    expect(dashboard).toMatch(/<Card aria-label="淨資產"/);
+    expect(dashboard).toMatch(/<FigureRow label="本月收支"[\s\S]*iconTone="green"[\s\S]*iconTone="red"/);
+    expect(dashboard).toContain("<RecentTransactions owner={ownerFilter} />");
+    expect(dashboard).toContain("本月支出重點");
+    expect(dashboard).toContain("資產配置");
+    expect(dashboard).toContain("資產走勢圖");
+  });
+
+  it("investments use figure tiles and the spending chart uses the shared palette", () => {
+    expect(page("InvestmentsPage.tsx")).toContain('<FigureRow label="投資摘要" className="sm:grid-cols-3">');
+    expect(page("AnalysisPage.tsx")).not.toContain("item.color");
+  });
+
+  it("the sidebar is light in A and follows dark mode through app-sidebar", () => {
+    const app = readFileSync(join(srcDir, "App.tsx"), "utf8");
+    expect(app).toContain('"app-sidebar fixed inset-y-0 left-0 z-40 flex flex-col border-r border-slate-200/70 bg-white/85');
+    expect(app).not.toMatch(/text-emerald-(50|100)\//);
+    expect(css).toMatch(/\.dark \.app-sidebar \{/);
+  });
+});
+
+describe("amounts show the currency code small and grey", () => {
+  // 2026-11-23: the user asked for a small currency mark in front of big numbers, then asked
+  // why "$" was there and picked the bank-account style "TWD 12,345" / "USD 67,000.00".
+  it.each([
+    [1284560, "TWD", "TWD 1,284,560"],
+    [-12680, "TWD", "TWD −12,680"],
+    [0, "TWD", "TWD 0"],
+    [67000, "USD", "USD 67,000.00"],
+    [1500, "JPY", "JPY 1,500"],
+  ])("money(%s, %s) is %s", (value, currency, expected) => {
+    expect(money(value, currency)).toBe(expected);
+  });
+
+  it("never writes NT$ or US$ anywhere in the pages", () => {
+    for (const { name, source } of pageSources) {
+      expect(source, name).not.toMatch(/NT\$|US\$/);
     }
   });
 
-  it("black hairlines stay visible in dark mode", () => {
-    const css = readFileSync(join(srcDir, "index.css"), "utf8");
-    expect(css).toMatch(/\.dark \.border-ink\b/);
-    expect(css).toMatch(/\.dark \.border-t-ink\b/);
-    expect(css).toMatch(/\.dark \.divide-slate-200\b/);
-    expect(css).not.toMatch(/#(047857|ecfdf5)/i);
+  it("a plus sign only appears when asked for", () => {
+    expect(money(5000)).toBe("TWD 5,000");
+    expect(money(5000, "TWD", { signed: true })).toBe("TWD +5,000");
   });
 
-  it("investments lead with a hairline figure row, and the spending chart uses the shared palette", () => {
-    const investments = pageSources.find((page) => page.name === "InvestmentsPage.tsx")!.source;
-    expect(investments).toContain('<FigureRow label="投資摘要">');
-    const analysis = pageSources.find((page) => page.name === "AnalysisPage.tsx")!.source;
-    expect(analysis).not.toContain("item.color");
+  it.each([
+    ["TWD 1,284,560", "TWD", "1,284,560"],
+    ["TWD −12,680", "TWD", "−12,680"],
+    ["USD 67,000.00", "USD", "67,000.00"],
+  ])("%s", (value, currency, digits) => {
+    const { container } = render(<Amount value={value} />);
+    const mark = container.querySelector("span > span")!;
+    expect(mark.textContent).toBe(currency);
+    expect(mark.className).toContain("text-[0.5em]");
+    // 2026-11-23: a big "+" in front of a small currency mark looked broken, so the sign sits next to the digits.
+    expect(container.textContent).toBe(`${currency}${digits}`);
+    expect(container.firstElementChild!.firstElementChild).toBe(mark);
+  });
+
+  it("green gains and income carry no plus sign, because the green already says it", () => {
+    // 2026-11-23: the user said "綠色就是漲阿，為甚麼要+".
+    for (const name of ["DashboardPage.tsx", "InvestmentsPage.tsx", "TransactionsPage.tsx"]) {
+      const source = pageSources.find((p) => p.name === name)!.source;
+      expect(source, name).not.toMatch(/(>= 0|income) \? "\+"/);
+    }
+  });
+
+  it("big figures on the overview, tiles and account cards use it", () => {
+    expect(readFileSync(join(srcDir, "ui.tsx"), "utf8")).toContain('typeof value === "string" ? <Amount value={value} /> : value');
+    expect(pageSources.find((p) => p.name === "DashboardPage.tsx")!.source).toContain("<Amount value={money(data.net_worth)} />");
+    expect(pageSources.find((p) => p.name === "AccountsPage.tsx")!.source).toContain("<Amount value={money(Math.abs(account.total_twd))} />");
   });
 });

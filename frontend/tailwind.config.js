@@ -1,7 +1,8 @@
 /** @type {import('tailwindcss').Config} */
-// Design direction "B 極簡黑白" (2026-11): ink-black on warm paper, thin hairlines,
-// one lime accent. Existing class names (forest, emerald, slate) are remapped here so
-// every page follows the same palette without per-page color edits.
+// Design direction "A 清透卡片" (2026-11): light grey canvas, white cards with soft
+// shadows, an indigo accent and tinted icons. Dark mode is "C 深色高級" (dark gradient,
+// champagne gold), defined in src/index.css. Existing class names (forest, emerald,
+// slate) are remapped here so every page follows the palette without per-page edits.
 export default {
   darkMode: "class",
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
@@ -12,50 +13,52 @@ export default {
         display: ["Inter", '"Chiron Hei HK"', '"Noto Sans TC"', "sans-serif"],
       },
       colors: {
-        ink: "#111111",
-        canvas: "#fafaf8",
-        forest: "#111111",
-        mint: "#d7f75b",
-        lime: {
-          DEFAULT: "#d7f75b",
-          soft: "#eefbc0",
+        ink: "#1d1d1f",
+        canvas: "#f4f4f6",
+        forest: "#1d1d1f",
+        accent: {
+          DEFAULT: "#5b6cf0",
+          soft: "#eef0ff",
+          strong: "#4453d6",
         },
-        // Positive / accent tone: olive text on pale lime, readable on paper.
+        // Positive tone: calm green on a pale green tint.
         emerald: {
-          50: "#f4f9e0",
-          100: "#e9f4c2",
-          200: "#d8ec8f",
-          300: "#c2dd5e",
-          400: "#a3c23a",
-          500: "#7f9c22",
-          600: "#5f7a12",
-          700: "#4a600b",
-          800: "#384a08",
-          900: "#283506",
-          950: "#182104",
+          50: "#e7f6ee",
+          100: "#d0eedd",
+          200: "#a6dfbf",
+          300: "#6fc996",
+          400: "#3fb072",
+          500: "#23955a",
+          600: "#1a7f4b",
+          700: "#16693f",
+          800: "#125533",
+          900: "#0e4128",
+          950: "#082917",
         },
-        // Warm neutral greys that sit on the paper background.
+        // Cool neutral greys, close to the ones iPhone apps use.
         slate: {
-          50: "#f6f5f1",
-          100: "#efeee9",
-          200: "#e2e1da",
-          300: "#cfcec6",
-          400: "#9e9d96",
-          500: "#6b6b66",
-          600: "#55554f",
-          700: "#3f3f3b",
-          800: "#2a2a27",
-          900: "#1a1a18",
+          50: "#f7f7f9",
+          100: "#f0f0f3",
+          200: "#e5e5ea",
+          300: "#d1d1d6",
+          400: "#aeaeb2",
+          500: "#86868b",
+          600: "#6e6e73",
+          700: "#48484a",
+          800: "#2c2c2e",
+          900: "#1d1d1f",
           950: "#111111",
         },
       },
       borderRadius: {
-        xl: "0.625rem",
-        "2xl": "0.75rem",
-        "3xl": "1rem",
+        xl: "0.875rem",
+        "2xl": "1.25rem",
+        "3xl": "1.5rem",
       },
       boxShadow: {
-        soft: "none",
+        soft: "0 1px 2px rgb(0 0 0 / 4%), 0 8px 24px rgb(0 0 0 / 5%)",
+        card: "0 1px 2px rgb(0 0 0 / 4%), 0 8px 24px rgb(0 0 0 / 5%)",
+        lift: "0 2px 4px rgb(0 0 0 / 5%), 0 16px 36px rgb(0 0 0 / 10%)",
       },
     },
   },
