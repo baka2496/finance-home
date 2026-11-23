@@ -372,13 +372,13 @@ function LoginScreen() {
   }
 
   return (
-    <div className="relative grid min-h-screen place-items-center overflow-hidden bg-sky-100 px-4 py-10">
+    <div className="relative grid min-h-screen place-items-center overflow-hidden bg-canvas px-4 py-10">
       <div className="absolute inset-0 bg-[url('/finance-home-cover.png?v=2')] bg-cover bg-center opacity-25" />
       <div className="absolute inset-0 bg-gradient-to-b from-white/25 via-white/55 to-canvas" />
       <div className="relative w-full max-w-md rounded-3xl border border-white/70 bg-white/90 p-7 shadow-2xl backdrop-blur sm:p-9">
         <img src="/finance-home-icon-192.png" alt="財務居" className="mx-auto size-24 rounded-3xl object-cover shadow-lg" />
         <div className="mt-5 text-center">
-          <h1 className="text-2xl font-bold text-ink">登入財務居</h1>
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">登入財務居</h1>
           <p className="mt-2 text-sm text-slate-500">輸入你的專屬密碼，才能查看雲端財務資料。</p>
         </div>
         <div
@@ -389,7 +389,7 @@ function LoginScreen() {
               ? "bg-emerald-50 text-emerald-700"
               : serverStatus === "error"
                 ? "bg-amber-50 text-amber-700"
-                : "bg-sky-50 text-sky-700",
+                : "bg-slate-100 text-ink",
           )}
         >
           <span
@@ -399,7 +399,7 @@ function LoginScreen() {
                 ? "bg-emerald-500"
                 : serverStatus === "error"
                   ? "bg-amber-500"
-                  : "animate-pulse bg-sky-500",
+                  : "animate-pulse bg-lime",
             )}
           />
           {serverStatus === "ready"
@@ -455,7 +455,7 @@ function AuthUnavailableScreen({ configurationError = false }: { configurationEr
     <div className="grid min-h-screen place-items-center bg-canvas px-4">
       <div className="max-w-md rounded-3xl border border-amber-200 bg-white p-7 text-center shadow-card">
         <LockKeyhole className="mx-auto text-amber-600" size={28} />
-        <h1 className="mt-4 text-xl font-bold text-ink">
+        <h1 className="mt-4 font-display text-xl font-semibold tracking-tight text-ink">
           {configurationError ? "登入保護設定不一致" : "暫時無法確認登入狀態"}
         </h1>
         <p className="mt-2 text-sm leading-6 text-slate-500">
@@ -484,7 +484,7 @@ function PublicInfoPage({ kind }: { kind: "privacy" | "terms" }) {
             <p className="text-sm text-slate-400">Personal Finance</p>
           </div>
         </div>
-        <h1 className="mt-8 text-3xl font-bold text-ink">
+        <h1 className="mt-8 font-display text-3xl font-semibold tracking-tight text-ink">
           {privacy ? "隱私權政策" : "服務條款"}
         </h1>
         <p className="mt-2 text-sm text-slate-400">最後更新：2026 年 9 月 4 日</p>

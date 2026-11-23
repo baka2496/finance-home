@@ -117,8 +117,8 @@ export default function CreditCardCycles({
                       : " · 帳期未知，此金額不是應繳金額"}
                 </p>
               </div>
-              <div className="rounded-xl bg-blue-50 p-3">
-                <p className="text-xs text-blue-700">{cycle.current_bill ? "本期剩餘應繳" : cycle.last_paid_bill ? "最近帳單" : "正式帳單"}</p>
+              <div className="rounded-xl bg-slate-100 p-3">
+                <p className="text-xs text-ink">{cycle.current_bill ? "本期剩餘應繳" : cycle.last_paid_bill ? "最近帳單" : "正式帳單"}</p>
                 <p className="mt-1 font-semibold">
                   {cycle.current_bill
                     ? money(cycle.current_bill.remaining_due ?? cycle.current_bill.amount_due, cycle.currency)
@@ -127,7 +127,7 @@ export default function CreditCardCycles({
                 {!cycle.current_bill && cycle.last_paid_bill && <p className="mt-1 text-xs">原繳款期限 {cycle.last_paid_bill.due_date}</p>}
                 {cycle.current_bill && (
                   <>
-                    {Boolean(cycle.current_bill.payments_total) && <p className="mt-1 text-xs text-blue-700">已記錄 {money(cycle.current_bill.payments_total || 0, cycle.currency)}</p>}
+                    {Boolean(cycle.current_bill.payments_total) && <p className="mt-1 text-xs text-ink">已記錄 {money(cycle.current_bill.payments_total || 0, cycle.currency)}</p>}
                     <p className="mt-1 text-xs">繳款日 {cycle.current_bill.due_date}</p>
                     {cycle.current_bill.period_start && cycle.current_bill.period_end && (
                       <p className="mt-1 text-xs">{cycle.current_bill.period_start}～{cycle.current_bill.period_end}</p>

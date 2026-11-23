@@ -28,7 +28,7 @@ import AttentionReminders from "../AttentionReminders";
 import { useOwnerFilter } from "../ownerFilter";
 import type { Dashboard } from "../types";
 import { useChartTheme } from "../chartTheme";
-import { Badge, Button, Card, EmptyState, PageHeader, money, number } from "../ui";
+import { Badge, Button, Card, EmptyState, Figure, PageHeader, money, number } from "../ui";
 
 const accountLabels: Record<string, string> = {
   bank: "銀行存款",
@@ -40,16 +40,6 @@ const accountLabels: Record<string, string> = {
   loan: "貸款",
   other: "其他",
 };
-
-function Figure({ label, value, subtext, className }: { label: string; value: string; subtext: string; className?: string }) {
-  return (
-    <div className={`min-w-0 border-slate-200 py-4 ${className ?? ""}`}>
-      <p className="text-xs text-slate-500">{label}</p>
-      <p className="mt-1 truncate font-display text-xl font-semibold tracking-tight text-ink sm:text-2xl">{value}</p>
-      <p className="mt-1 text-xs text-slate-400">{subtext}</p>
-    </div>
-  );
-}
 
 export default function DashboardPage() {
   const [ownerFilter] = useOwnerFilter();

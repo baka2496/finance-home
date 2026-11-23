@@ -143,4 +143,39 @@ describe("the black-and-white style stays consistent", () => {
     const dashboard = pageSources.find((page) => page.name === "DashboardPage.tsx")!.source;
     expect(dashboard).toMatch(/aria-label="淨資產"[\s\S]*font-display text-5xl/);
   });
+
+  it("uses the chosen fonts: Inter for numbers and Latin text, 昭源黑體 (Chiron Hei HK) for Chinese", () => {
+    const tailwind = readFileSync(join(srcDir, "..", "tailwind.config.js"), "utf8");
+    const css = readFileSync(join(srcDir, "index.css"), "utf8");
+    expect(tailwind).toMatch(/sans: \["Inter", '"Chiron Hei HK"'/);
+    expect(tailwind).toMatch(/display: \["Inter", '"Chiron Hei HK"'/);
+    expect(css).toContain("family=Chiron+Hei+HK");
+    expect(tailwind + css).not.toMatch(/Space.Grotesk/);
+  });
+
+  it("pages use no decorative blue/purple/sky/orange tints; color is kept for meaning (income, warnings, errors)", () => {
+    const sources = [
+      ...pageSources,
+      { name: "ui.tsx", source: readFileSync(join(srcDir, "ui.tsx"), "utf8") },
+      { name: "App.tsx", source: readFileSync(join(srcDir, "App.tsx"), "utf8") },
+    ];
+    for (const { name, source } of sources) {
+      expect(source, name).not.toMatch(/\b(bg|text|border|from)-(blue|sky|violet|purple|orange|indigo)-\d/);
+    }
+  });
+
+  it("black hairlines stay visible in dark mode", () => {
+    const css = readFileSync(join(srcDir, "index.css"), "utf8");
+    expect(css).toMatch(/\.dark \.border-ink\b/);
+    expect(css).toMatch(/\.dark \.border-t-ink\b/);
+    expect(css).toMatch(/\.dark \.divide-slate-200\b/);
+    expect(css).not.toMatch(/#(047857|ecfdf5)/i);
+  });
+
+  it("investments lead with a hairline figure row, and the spending chart uses the shared palette", () => {
+    const investments = pageSources.find((page) => page.name === "InvestmentsPage.tsx")!.source;
+    expect(investments).toContain('<FigureRow label="投資摘要">');
+    const analysis = pageSources.find((page) => page.name === "AnalysisPage.tsx")!.source;
+    expect(analysis).not.toContain("item.color");
+  });
 });

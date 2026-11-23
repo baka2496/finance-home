@@ -138,9 +138,10 @@ input[type="time"]::-webkit-date-and-time-value {
   height: 2.5rem;
   flex: 0 0 auto;
   place-items: center;
-  border-radius: .85rem;
-  color: #047857;
-  background: #ecfdf5;
+  border-radius: 999px;
+  color: #111111;
+  background: transparent;
+  border: 1px solid #e2e1da;
 }
 
 .settings-mobile-section-chevron {
@@ -233,9 +234,10 @@ input[type="time"]::-webkit-date-and-time-value {
     height: 2.5rem;
     flex: 0 0 auto;
     place-items: center;
-    border-radius: .85rem;
-    color: #047857;
-    background: #ecfdf5;
+    border-radius: 999px;
+    color: #111111;
+    background: transparent;
+    border: 1px solid #e2e1da;
   }
 
   .settings-mobile-section-chevron {
@@ -296,8 +298,9 @@ input[type="time"]::-webkit-date-and-time-value {
   }
 
   .dark .settings-mobile-section-icon {
-    color: #d7f75b;
-    background: #262b12;
+    color: #f2f2ee;
+    background: transparent;
+    border-color: #353532;
   }
 
   .dark .settings-mobile-section-content {
@@ -554,4 +557,18 @@ textarea {
   color: #f2f2ee !important;
   background: #191918 !important;
   border-color: #353532 !important;
+}
+
+/* Black hairlines (B style) flip to light ink in dark mode so they stay visible. */
+.dark .border-ink {
+  border-color: #f2f2ee;
+}
+.dark .border-t-ink {
+  border-top-color: #f2f2ee;
+}
+.dark .border-b-slate-200 {
+  border-bottom-color: #353532;
+}
+.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #353532;
 }

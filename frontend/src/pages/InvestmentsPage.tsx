@@ -26,6 +26,8 @@ import {
   DateInput,
   Dialog,
   EmptyState,
+  Figure,
+  FigureRow,
   Field,
   FormActions,
   Input,
@@ -594,7 +596,7 @@ export default function InvestmentsPage() {
       />
 
       {refreshMessage && (
-        <div className="mb-5 flex items-start justify-between rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+        <div className="mb-5 flex items-start justify-between rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-700">
           <span>{refreshMessage}</span>
           <button onClick={() => setRefreshMessage("")}>×</button>
         </div>
@@ -636,33 +638,24 @@ export default function InvestmentsPage() {
         </div>
       ) : (
         <>
-      <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <Card className="p-5">
-          <p className="text-sm text-slate-500">現貨與股票市值（折合 TWD）</p>
-          <p className="mt-2 text-2xl font-bold text-ink">{money(totalValue)}</p>
-          <p className="mt-3 text-xs text-slate-400">
-            {positions.data?.length || 0} 項持倉{totals.futures ? `，含 ${totals.futures} 項合約` : ""}
-          </p>
-        </Card>
-        <Card className="p-5">
-          <p className="text-sm text-slate-500">現貨與股票成本（折合 TWD）</p>
-          <p className="mt-2 text-2xl font-bold text-ink">{money(totalCost)}</p>
-          <p className="mt-3 text-xs text-slate-400">合約名目價值不計入成本與總市值</p>
-        </Card>
-        <Card className="p-5">
-          <p className="text-sm text-slate-500">未實現損益（折合 TWD）</p>
-          <p className={`mt-2 text-2xl font-bold ${totalProfit >= 0 ? "text-emerald-700" : "text-red-600"}`}>
-            {totalProfit >= 0 ? "+" : ""}{money(totalProfit)}
-          </p>
-          <p className="mt-3 text-xs text-slate-400">
-            {totals.futures
-              ? "含幣安合約未實現損益"
-              : totalCost
-                ? `${totalProfit >= 0 ? "+" : ""}${number((totalProfit / totalCost) * 100, 2)}%`
-                : "尚無成本資料"}
-          </p>
-        </Card>
-      </div>
+      <FigureRow label="投資摘要">
+        <Figure
+          label="現貨與股票市值（折合 TWD）"
+          value={money(totalValue)}
+          subtext={`${positions.data?.length || 0} 項持倉${totals.futures ? `，含 ${totals.futures} 項合約` : ""}`}
+        />
+        <Figure label="現貨與股票成本（折合 TWD）" value={money(totalCost)} subtext="合約名目價值不計入成本與總市值" />
+        <Figure
+          label="未實現損益（折合 TWD）"
+          value={`${totalProfit >= 0 ? "+" : ""}${money(totalProfit)}`}
+          tone={totalProfit >= 0 ? "positive" : "negative"}
+          subtext={totals.futures
+            ? "含幣安合約未實現損益"
+            : totalCost
+              ? `${totalProfit >= 0 ? "+" : ""}${number((totalProfit / totalCost) * 100, 2)}%`
+              : "尚無成本資料"}
+        />
+      </FigureRow>
 
       <Card className="overflow-hidden">
         {!positions.data?.length ? (
@@ -689,7 +682,7 @@ export default function InvestmentsPage() {
                   className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${positionFilter === option.value ? "bg-forest text-white" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
                   onClick={() => setPositionFilter(option.value)}
                 >
-                  {option.label} <span className={positionFilter === option.value ? "text-emerald-100" : "text-slate-400"}>({option.count})</span>
+                  {option.label} <span className={positionFilter === option.value ? "text-slate-300" : "text-slate-400"}>({option.count})</span>
                 </button>
               ))}
             </div>
@@ -706,7 +699,7 @@ export default function InvestmentsPage() {
               <details key={position.id} className="group px-4 py-4">
                 <summary className="cursor-pointer list-none">
                   <div className="flex items-start gap-3">
-                    <div className={`grid size-11 shrink-0 place-items-center rounded-xl ${position.market === "CRYPTO" || position.instrument_type === "futures" ? "bg-amber-50 text-amber-600" : "bg-blue-50 text-blue-700"}`}>
+                    <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-slate-100 text-ink">
                       {position.market === "CRYPTO" || position.instrument_type === "futures" ? <Bitcoin size={19} /> : <LineChart size={19} />}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -817,7 +810,7 @@ export default function InvestmentsPage() {
                   <tr key={position.id} className="hover:bg-slate-50/60">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className={`grid size-10 place-items-center rounded-xl ${position.market === "CRYPTO" || position.instrument_type === "futures" ? "bg-amber-50 text-amber-600" : "bg-blue-50 text-blue-700"}`}>
+                        <div className="grid size-10 place-items-center rounded-xl bg-slate-100 text-ink">
                           {position.market === "CRYPTO" || position.instrument_type === "futures" ? <Bitcoin size={18} /> : <LineChart size={18} />}
                         </div>
                         <div>
@@ -990,7 +983,7 @@ export default function InvestmentsPage() {
               />
             </Field>
           </div>
-          <p className="rounded-xl bg-blue-50 px-3 py-2 text-xs leading-5 text-blue-700">
+          <p className="rounded-xl bg-slate-100 px-3 py-2 text-xs leading-5 text-ink">
             修改其中一個成本欄位，另一個會依持有數量自動換算。儲存後會立即重新計算損益。
           </p>
           {updatePosition.isError && (
