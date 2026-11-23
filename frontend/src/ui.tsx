@@ -810,9 +810,9 @@ export function PageHeader({
     <header className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
       <div>
         {eyebrow && (
-          <p className="mb-2 text-xs font-bold uppercase tracking-[.2em] text-emerald-700">{eyebrow}</p>
+          <p className="mb-2 text-xs font-medium tracking-[.2em] text-slate-500">{eyebrow}</p>
         )}
-        <h1 className="text-3xl font-bold tracking-tight text-ink">{title}</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-ink">{title}</h1>
         <p className="mt-2 text-sm text-slate-500">{description}</p>
       </div>
       {action}

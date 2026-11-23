@@ -36,6 +36,7 @@ import { taipeiMonthInputValue } from "../date";
 import { ownerFilterLabels, useOwnerFilter } from "../ownerFilter";
 import type { Account, Category, Dashboard, HealthScore, IgnoredRecurringExpense, RecurringExpenseDefinition, SpendingAnalysis } from "../types";
 import { Badge, Button, Card, Dialog, EmptyState, Field, FormOptions, Input, MonthInput, PageHeader, Select, Skeleton, money, number } from "../ui";
+import { useChartTheme } from "../chartTheme";
 
 const recurringPresets = ["房貸", "車貸", "信貸", "學貸", "房租", "保險", "健身房月費", "手機費", "網路費", "訂閱服務"];
 const recurringOwnerOptions = [
@@ -103,6 +104,7 @@ function indicatorState(key: string, value: number | null) {
 }
 
 export default function AnalysisPage() {
+  const chartTheme = useChartTheme();
   const client = useQueryClient();
   const [ownerFilter] = useOwnerFilter();
   const [selectedMonth, setSelectedMonth] = useState(taipeiMonthInputValue);
@@ -721,12 +723,12 @@ export default function AnalysisPage() {
               <div className="mt-5 h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={dashboard.data?.cashflow_trend || []} accessibilityLayer={false}>
-                    <CartesianGrid vertical={false} stroke="#e8eeeb" strokeDasharray="4 4" />
+                    <CartesianGrid vertical={false} stroke={chartTheme.grid} strokeDasharray="4 4" />
                     <XAxis dataKey="month" tickLine={false} axisLine={false} />
                     <YAxis width={70} tickLine={false} axisLine={false} tickFormatter={(value) => `${value / 1000}k`} />
                     <Tooltip formatter={(value) => money(Number(value))} cursor={{ fill: "rgba(35, 132, 95, .08)" }} />
-                    <Bar dataKey="income" name="收入" fill="#23845f" radius={[5, 5, 0, 0]} maxBarSize={34} />
-                    <Bar dataKey="expense" name="支出" fill="#f1a15b" radius={[5, 5, 0, 0]} maxBarSize={34} />
+                    <Bar dataKey="income" name="收入" fill={chartTheme.ink} radius={[5, 5, 0, 0]} maxBarSize={34} />
+                    <Bar dataKey="expense" name="支出" fill={chartTheme.muted} radius={[5, 5, 0, 0]} maxBarSize={34} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

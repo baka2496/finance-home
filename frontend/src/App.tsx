@@ -288,7 +288,7 @@ function Sidebar({
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                className="group relative grid size-11 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-200 text-sm font-bold text-forest ring-2 ring-emerald-100/20 transition hover:ring-emerald-100/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="group relative grid size-11 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-200 text-sm font-bold text-[#111111] ring-2 ring-emerald-100/20 transition hover:ring-emerald-100/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 onClick={() => avatarInputRef.current?.click()}
                 aria-label="更換大頭照"
                 title="更換大頭照"

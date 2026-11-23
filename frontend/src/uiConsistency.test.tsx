@@ -7,6 +7,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import QuickTransactionForm from "./QuickTransactionForm";
 import { priceSourceLabel } from "./pages/InvestmentsPage";
+import { chartThemeFor } from "./chartTheme";
 import type { Account, Category } from "./types";
 import { Button, Dialog } from "./ui";
 
@@ -22,11 +23,9 @@ describe("income and spending arrows mean the same thing on every page", () => {
     for (const { name, source } of pageSources) {
       expect(source, name).not.toMatch(/\bArrow(Up|Down)(Left|Right)\b/);
     }
-    for (const name of ["DashboardPage.tsx", "TransactionsPage.tsx"]) {
-      const source = pageSources.find((page) => page.name === name)!.source;
-      expect(source, name).toContain("IncomeIcon");
-      expect(source, name).toContain("ExpenseIcon");
-    }
+    const transactions = pageSources.find((page) => page.name === "TransactionsPage.tsx")!.source;
+    expect(transactions).toContain("IncomeIcon");
+    expect(transactions).toContain("ExpenseIcon");
   });
 });
 
@@ -115,5 +114,33 @@ describe("adding a transaction", () => {
     const category = screen.getByRole("combobox", { name: "分類" });
     expect(category.closest("details")).toBeNull();
     expect([...(category as HTMLSelectElement).options].map((option) => option.text)).toEqual(["自動分類", "餐飲"]);
+  });
+});
+
+describe("the black-and-white style stays consistent", () => {
+  // 2026-11: the user picked style B (ink on paper, one lime accent).
+  it("pages and shared parts take chart colors from useChartTheme instead of hard-coding the old greens", () => {
+    const sources = [...pageSources, { name: "ui.tsx", source: readFileSync(join(srcDir, "ui.tsx"), "utf8") }];
+    for (const { name, source } of sources) {
+      expect(source, name).not.toMatch(/#(23845f|167a5a|4ecb9b|153b32|e8eeeb|f1a15b)/i);
+    }
+  });
+
+  it("chart colors stay readable in dark mode", () => {
+    const light = chartThemeFor("light");
+    const dark = chartThemeFor("dark");
+    expect(light.ink).not.toBe(dark.ink);
+    expect(dark.ink).not.toBe("#111111");
+    expect(dark.categorical[0]).toBe(dark.ink);
+  });
+
+  it("text on the lime accent is pinned to ink so dark mode cannot turn it light", () => {
+    const dashboard = pageSources.find((page) => page.name === "DashboardPage.tsx")!.source;
+    expect(dashboard).toMatch(/bg-lime[^"]*text-\[#111111\]/);
+  });
+
+  it("the overview leads with one large net-worth figure", () => {
+    const dashboard = pageSources.find((page) => page.name === "DashboardPage.tsx")!.source;
+    expect(dashboard).toMatch(/aria-label="淨資產"[\s\S]*font-display text-5xl/);
   });
 });
