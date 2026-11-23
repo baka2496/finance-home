@@ -1,13 +1,14 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Chiron+Hei+HK:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  font-family: Inter, "Noto Sans TC", system-ui, sans-serif;
-  color: #17201d;
-  background: #f5f7f4;
+  font-family: Inter, "Chiron Hei HK", "Noto Sans TC", system-ui, sans-serif;
+  color: #111111;
+  background: #fafaf8;
+  font-variant-numeric: tabular-nums;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-text-size-adjust: 100%;
@@ -21,12 +22,12 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: #f5f7f4;
+  background: #fafaf8;
 }
 
 #root {
   min-height: 100vh;
-  background: #f5f7f4;
+  background: #fafaf8;
 }
 
 @keyframes global-query-progress-slide {
@@ -47,14 +48,14 @@ body {
   z-index: 100;
   height: 3px;
   overflow: hidden;
-  background: rgb(167 243 208 / 55%);
+  background: rgb(215 247 91 / 45%);
 }
 
 .global-query-progress-bar {
   height: 100%;
   width: 42%;
   border-radius: 9999px;
-  background: #10b981;
+  background: #111111;
   animation: global-query-progress-slide 1.05s ease-in-out infinite;
 }
 
@@ -137,9 +138,10 @@ input[type="time"]::-webkit-date-and-time-value {
   height: 2.5rem;
   flex: 0 0 auto;
   place-items: center;
-  border-radius: .85rem;
-  color: #047857;
-  background: #ecfdf5;
+  border-radius: 999px;
+  color: #111111;
+  background: transparent;
+  border: 1px solid #e2e1da;
 }
 
 .settings-mobile-section-chevron {
@@ -166,13 +168,13 @@ input[type="time"]::-webkit-date-and-time-value {
 }
 
 .dark .settings-mobile-section {
-  border-color: #31413a;
-  background: #151e1b;
+  border-color: #353532;
+  background: #191918;
   box-shadow: 0 12px 30px rgb(0 0 0 / 18%);
 }
 
 .dark .settings-mobile-section.is-open > .settings-mobile-section-summary {
-  background: #1b2722;
+  background: #222220;
 }
 
 @media (max-width: 767px) {
@@ -232,9 +234,10 @@ input[type="time"]::-webkit-date-and-time-value {
     height: 2.5rem;
     flex: 0 0 auto;
     place-items: center;
-    border-radius: .85rem;
-    color: #047857;
-    background: #ecfdf5;
+    border-radius: 999px;
+    color: #111111;
+    background: transparent;
+    border: 1px solid #e2e1da;
   }
 
   .settings-mobile-section-chevron {
@@ -285,22 +288,23 @@ input[type="time"]::-webkit-date-and-time-value {
   }
 
   .dark .settings-mobile-section {
-    border-color: #31413a;
-    background: #151e1b;
+    border-color: #353532;
+    background: #191918;
     box-shadow: 0 12px 30px rgb(0 0 0 / 18%);
   }
 
   .dark .settings-mobile-section.is-open > .settings-mobile-section-summary {
-    background: #1b2722;
+    background: #222220;
   }
 
   .dark .settings-mobile-section-icon {
-    color: #6ee7b7;
-    background: #123127;
+    color: #f2f2ee;
+    background: transparent;
+    border-color: #353532;
   }
 
   .dark .settings-mobile-section-content {
-    border-color: #31413a;
+    border-color: #353532;
   }
 }
 
@@ -313,7 +317,7 @@ textarea {
 
 ::selection {
   color: #fff;
-  background: #23845f;
+  background: #111111;
 }
 
 ::-webkit-scrollbar {
@@ -342,84 +346,84 @@ textarea {
 
 /* Dark mode uses one root class so every page, dialog and chart changes together. */
 .dark {
-  color: #e7efeb;
-  background: #0b1210;
+  color: #ecece8;
+  background: #0f0f0e;
 }
 
 .dark body,
 .dark #root,
 .dark .bg-canvas {
-  background: #0b1210;
+  background: #0f0f0e;
 }
 
 .dark .bg-canvas\/90 {
-  background-color: rgb(11 18 16 / 90%);
+  background-color: rgb(15 15 14 / 90%);
 }
 
 .dark .bg-white {
-  background-color: #151e1b;
+  background-color: #191918;
 }
 
 .dark .bg-white\/95 {
-  background-color: rgb(21 30 27 / 95%);
+  background-color: rgb(25 25 24 / 95%);
 }
 
 .dark .bg-white\/90 {
-  background-color: rgb(21 30 27 / 90%);
+  background-color: rgb(25 25 24 / 90%);
 }
 
 .dark .bg-slate-50,
 .dark .bg-slate-50\/80,
 .dark .bg-slate-50\/70,
 .dark .bg-slate-50\/60 {
-  background-color: #1a2521;
+  background-color: #1f1f1d;
 }
 
 .dark .bg-slate-100,
 .dark .bg-slate-200\/70 {
-  background-color: #24312c;
+  background-color: #2a2a28;
 }
 
 .dark .border-slate-100,
 .dark .border-slate-200,
 .dark .border-slate-200\/80 {
-  border-color: #31413a;
+  border-color: #353532;
 }
 
 .dark .text-ink,
 .dark .text-slate-800 {
-  color: #edf4f0;
+  color: #f2f2ee;
 }
 
 .dark .text-forest {
-  color: #6ee7b7;
+  color: #d7f75b;
 }
 
 .dark .text-slate-700 {
-  color: #d4dfd9;
+  color: #d8d8d3;
 }
 
 .dark .text-slate-600 {
-  color: #b8c7c0;
+  color: #bdbdb7;
 }
 
 .dark .text-slate-500 {
-  color: #9bada5;
+  color: #a1a19b;
 }
 
 .dark .text-slate-400 {
-  color: #81958c;
+  color: #878781;
 }
 
 .dark .text-slate-300 {
-  color: #73877e;
+  color: #7a7a74;
 }
 
 .dark .text-emerald-600,
 .dark .text-emerald-700,
 .dark .text-emerald-800,
 .dark .text-emerald-900 {
-  color: #6ee7b7;
+  color: #d7f75b;
 }
 
 .dark .text-blue-700,
@@ -450,7 +454,7 @@ textarea {
 .dark .bg-emerald-50\/80,
 .dark .bg-emerald-50\/70,
 .dark .bg-emerald-50\/40 {
-  background-color: #123127;
+  background-color: #262b12;
 }
 
 .dark .bg-blue-50,
@@ -488,31 +492,31 @@ textarea {
 .dark .border-emerald-300,
 .dark .border-blue-200,
 .dark .border-amber-200 {
-  border-color: #315246;
+  border-color: #4a5320;
 }
 
 .dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
-  border-color: #31413a;
+  border-color: #353532;
 }
 
 .dark .from-white\/25 {
-  --tw-gradient-from: rgb(11 18 16 / 35%) var(--tw-gradient-from-position);
-  --tw-gradient-to: rgb(11 18 16 / 0%) var(--tw-gradient-to-position);
+  --tw-gradient-from: rgb(15 15 14 / 35%) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(15 15 14 / 0%) var(--tw-gradient-to-position);
 }
 
 .dark .via-white\/55 {
-  --tw-gradient-to: rgb(11 18 16 / 0%) var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), rgb(11 18 16 / 72%) var(--tw-gradient-via-position), var(--tw-gradient-to);
+  --tw-gradient-to: rgb(15 15 14 / 0%) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), rgb(15 15 14 / 72%) var(--tw-gradient-via-position), var(--tw-gradient-to);
 }
 
 .dark .to-canvas {
-  --tw-gradient-to: #0b1210 var(--tw-gradient-to-position);
+  --tw-gradient-to: #0f0f0e var(--tw-gradient-to-position);
 }
 
 .dark .hover\:bg-slate-50:hover,
 .dark .hover\:bg-slate-50\/60:hover,
 .dark .hover\:bg-slate-100:hover {
-  background-color: #24312c;
+  background-color: #2a2a28;
 }
 
 .dark .hover\:bg-red-50:hover,
@@ -522,7 +526,7 @@ textarea {
 
 .dark .hover\:text-slate-700:hover,
 .dark .hover\:text-slate-800:hover {
-  color: #edf4f0;
+  color: #f2f2ee;
 }
 
 .dark input,
@@ -532,25 +536,39 @@ textarea {
 }
 
 .dark option {
-  color: #edf4f0;
-  background: #151e1b;
+  color: #f2f2ee;
+  background: #191918;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #40524a;
+  background: #45453f;
   background-clip: padding-box;
 }
 
 .dark .recharts-cartesian-axis-tick-value {
-  fill: #9bada5;
+  fill: #a1a19b;
 }
 
 .dark .recharts-cartesian-grid line {
-  stroke: #2d3c36;
+  stroke: #30302d;
 }
 
 .dark .recharts-default-tooltip {
-  color: #edf4f0 !important;
-  background: #151e1b !important;
-  border-color: #31413a !important;
+  color: #f2f2ee !important;
+  background: #191918 !important;
+  border-color: #353532 !important;
+}
+
+/* Black hairlines (B style) flip to light ink in dark mode so they stay visible. */
+.dark .border-ink {
+  border-color: #f2f2ee;
+}
+.dark .border-t-ink {
+  border-top-color: #f2f2ee;
+}
+.dark .border-b-slate-200 {
+  border-bottom-color: #353532;
+}
+.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #353532;
 }

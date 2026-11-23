@@ -803,10 +803,10 @@ export default function TransactionsPage() {
                 <summary className="cursor-pointer list-none">
                   <div className="flex items-start gap-3">
                     <div
-                      className={`grid size-11 shrink-0 place-items-center rounded-xl ${
+                      className={`grid size-11 shrink-0 place-items-center rounded-full ${
                         transaction.base_amount >= 0
                           ? "bg-emerald-50 text-emerald-700"
-                          : "bg-orange-50 text-orange-700"
+                          : "bg-slate-100 text-ink"
                       }`}
                     >
                       {transaction.base_amount >= 0 ? <IncomeIcon size={18} /> : <ExpenseIcon size={18} />}
@@ -1171,7 +1171,7 @@ export default function TransactionsPage() {
             <div className="mx-auto grid size-16 place-items-center rounded-full bg-emerald-100 text-emerald-700">
               <Check size={30} />
             </div>
-            <h3 className="mt-5 text-xl font-bold text-slate-800">匯入完成</h3>
+            <h3 className="mt-5 font-display text-xl font-semibold tracking-tight text-slate-800">匯入完成</h3>
             <p className="mt-2 text-sm text-slate-500">
               新增 {String(importResult.imported)} 筆，略過 {String(importResult.duplicates)} 筆重複資料。
             </p>
@@ -1196,9 +1196,9 @@ export default function TransactionsPage() {
               </div>
             )}
             {String(importResult.balance_source) === "historical_statement" && (
-              <div className="mx-auto mt-5 max-w-md rounded-2xl bg-blue-50 px-4 py-3 text-left">
-                <p className="text-sm font-semibold text-blue-900">已保留這份歷史對帳單</p>
-                <p className="mt-1 text-sm text-blue-700">檔案日期早於現有餘額快照，因此不會覆蓋目前帳戶餘額。</p>
+              <div className="mx-auto mt-5 max-w-md rounded-2xl bg-slate-100 px-4 py-3 text-left">
+                <p className="text-sm font-semibold text-ink">已保留這份歷史對帳單</p>
+                <p className="mt-1 text-sm text-ink">檔案日期早於現有餘額快照，因此不會覆蓋目前帳戶餘額。</p>
               </div>
             )}
             <Button
@@ -1257,11 +1257,11 @@ export default function TransactionsPage() {
               </Select>
             </Field>
 
-            <div className="rounded-2xl border border-blue-100 bg-blue-50/70 px-4 py-3">
-              <p className="text-sm font-semibold text-blue-900">
+            <div className="rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3">
+              <p className="text-sm font-semibold text-ink">
                 {selectedImportAccount?.nature === "liability" ? "信用卡負債會一起更新" : "帳戶餘額會一起更新"}
               </p>
-              <p className="mt-1 text-sm leading-6 text-blue-700">
+              <p className="mt-1 text-sm leading-6 text-ink">
                 {selectedImportAccount?.nature === "liability"
                   ? "刷卡消費會增加信用卡負債，不會直接扣除銀行存款；實際繳卡費時再用帳戶互轉記錄。"
                   : "系統只套用尚未反映過的明細；同一份檔案再次匯入不會重複扣款。若 CSV 有餘額欄位，會以最新檔案餘額為準。"}

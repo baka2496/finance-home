@@ -829,7 +829,7 @@ export default function SettingsPage() {
         <Card className="settings-detail-card p-6">
           <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
             <div className="flex items-start gap-4">
-              <div className="rounded-2xl bg-emerald-50 p-3 text-emerald-700"><Database size={20} /></div>
+              <div className="rounded-full border border-slate-200 p-3 text-ink"><Database size={20} /></div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="font-bold text-ink">資料備份</h2>
@@ -888,7 +888,7 @@ export default function SettingsPage() {
         >
         <Card className="settings-detail-card p-6">
           <div className="flex items-start gap-4">
-            <div className="rounded-2xl bg-blue-50 p-3 text-blue-700"><RefreshCw size={20} /></div>
+            <div className="rounded-full border border-slate-200 p-3 text-ink"><RefreshCw size={20} /></div>
             <div className="flex-1">
               <h2 className="font-bold text-ink">行情與匯率</h2>
               <p className="mt-2 text-sm leading-6 text-slate-500">
@@ -1110,7 +1110,7 @@ export default function SettingsPage() {
       <Card className="settings-detail-card mt-6 p-6">
         <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
           <div className="flex items-start gap-4">
-            <div className="rounded-2xl bg-blue-50 p-3 text-blue-700"><Mail size={20} /></div>
+            <div className="rounded-full border border-slate-200 p-3 text-ink"><Mail size={20} /></div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="font-bold text-ink">信用卡郵件自動記帳</h2>
@@ -1188,7 +1188,7 @@ export default function SettingsPage() {
         )}
 
         <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl bg-slate-50 px-4 py-3 text-sm">
-          {emailBusy && <p role="status" aria-live="polite" className="w-full rounded-xl bg-blue-50 p-3 text-sm text-blue-800">正在讀取郵件並整理記錄，已等待 {syncSeconds} 秒。完成後會顯示新增與待處理筆數；請勿重複送出。</p>}
+          {emailBusy && <p role="status" aria-live="polite" className="w-full rounded-xl bg-slate-100 p-3 text-sm text-slate-700">正在讀取郵件並整理記錄，已等待 {syncSeconds} 秒。完成後會顯示新增與待處理筆數；請勿重複送出。</p>}
           <p className="w-full text-slate-600">最新匯入消費：<strong>{gmail.data?.latest_transaction_date || "尚無郵件匯入交易"}</strong></p>
           <p className="text-slate-500">
             最近同步 <span className="ml-1 font-semibold text-slate-800">
@@ -1226,7 +1226,7 @@ export default function SettingsPage() {
         </details>}
 
         {gmail.data?.connected && emailSettingsOpen && !editingEmailRule && !manualEmailSetupOpen && (
-          <div className="mt-5 rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-emerald-50 p-5">
+          <div className="mt-5 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-100 to-emerald-50 p-5">
             <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
               <div>
                 <p className="font-bold text-slate-800">上傳郵件截圖，快速建立信用卡</p>
@@ -1258,10 +1258,10 @@ export default function SettingsPage() {
               <div className="mt-4 rounded-xl bg-white/80 p-4">
                 <div className="flex items-center justify-between gap-3 text-sm text-slate-600">
                   <span>{emailScreenshotName || "郵件截圖"}</span>
-                  <span className="font-semibold text-blue-700">{emailScreenshotProgress}%</span>
+                  <span className="font-semibold text-ink">{emailScreenshotProgress}%</span>
                 </div>
                 <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
-                  <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${emailScreenshotProgress}%` }} />
+                  <div className="h-full rounded-full bg-lime transition-all" style={{ width: `${emailScreenshotProgress}%` }} />
                 </div>
                 <p className="mt-2 text-xs text-slate-400">第一次使用需要下載繁體中文字庫，之後會使用瀏覽器快取。</p>
               </div>
@@ -1391,7 +1391,7 @@ export default function SettingsPage() {
             onSubmit={submitEmailRule}
           >
             {editingEmailRule && (
-              <div className="flex items-center justify-between rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-800">
+              <div className="flex items-center justify-between rounded-xl bg-slate-100 px-4 py-3 text-sm text-slate-700">
                 <span>正在編輯「{editingEmailRule.name}」</span>
                 <button
                   type="button"
@@ -1536,10 +1536,10 @@ export default function SettingsPage() {
                           : " · 尚未取得正式帳期，此金額不是應繳金額")}
                       </p>
                     </div>
-                    <div className="rounded-xl bg-blue-50 p-3">
-                      <p className="text-xs text-blue-500">本期帳單（正式金額）</p>
-                      <p className="mt-1 font-semibold text-blue-900">{cycle.current_bill ? money(cycle.current_bill.amount_due) : "尚未出帳"}</p>
-                      <p className="mt-1 text-xs text-blue-500">{cycle.current_bill ? `繳款日 ${cycle.current_bill.due_date}` : "等待電子帳單"}</p>
+                    <div className="rounded-xl bg-slate-100 p-3">
+                      <p className="text-xs text-slate-500">本期帳單（正式金額）</p>
+                      <p className="mt-1 font-semibold text-ink">{cycle.current_bill ? money(cycle.current_bill.amount_due) : "尚未出帳"}</p>
+                      <p className="mt-1 text-xs text-slate-500">{cycle.current_bill ? `繳款日 ${cycle.current_bill.due_date}` : "等待電子帳單"}</p>
                     </div>
                     <div className="rounded-xl bg-emerald-50 p-3">
                       <p className="text-xs text-emerald-600">已記錄繳款</p>
@@ -1622,7 +1622,7 @@ export default function SettingsPage() {
         <div className="border-b border-slate-100 px-6 py-5">
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
             <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-violet-50 p-2.5 text-violet-700"><BookOpen size={18} /></div>
+              <div className="rounded-full border border-slate-200 p-2.5 text-ink"><BookOpen size={18} /></div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="font-bold text-ink">自動分類</h2>

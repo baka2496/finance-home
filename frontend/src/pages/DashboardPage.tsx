@@ -3,7 +3,6 @@ import {
   CircleAlert,
   Landmark,
   PieChart as PieIcon,
-  PiggyBank,
   RefreshCw,
   Sparkles,
   Wallet,
@@ -24,11 +23,12 @@ import {
   YAxis,
 } from "recharts";
 import { api } from "../api";
-import { ExpenseIcon, IncomeIcon } from "../flowIcons";
+import { ExpenseIcon } from "../flowIcons";
 import AttentionReminders from "../AttentionReminders";
 import { useOwnerFilter } from "../ownerFilter";
 import type { Dashboard } from "../types";
-import { Badge, Button, Card, EmptyState, PageHeader, money, number } from "../ui";
+import { useChartTheme } from "../chartTheme";
+import { Badge, Button, Card, EmptyState, Figure, PageHeader, money, number } from "../ui";
 
 const accountLabels: Record<string, string> = {
   bank: "銀行存款",
@@ -41,38 +41,10 @@ const accountLabels: Record<string, string> = {
   other: "其他",
 };
 
-const chartColors = ["#167a5a", "#4ecb9b", "#7c3aed", "#f59e0b", "#3b82f6", "#ec4899"];
-function StatCard({
-  label,
-  value,
-  subtext,
-  icon: Icon,
-  tone,
-}: {
-  label: string;
-  value: string;
-  subtext: string;
-  icon: typeof Wallet;
-  tone: string;
-}) {
-  return (
-    <Card className="group p-5 transition hover:-translate-y-0.5">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm font-medium text-slate-500">{label}</p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-ink">{value}</p>
-        </div>
-        <div className={`rounded-2xl p-3 ${tone}`}>
-          <Icon size={20} />
-        </div>
-      </div>
-      <p className="mt-4 text-xs text-slate-400">{subtext}</p>
-    </Card>
-  );
-}
-
 export default function DashboardPage() {
   const [ownerFilter] = useOwnerFilter();
+  const chartTheme = useChartTheme();
+  const chartColors = chartTheme.categorical;
   const dashboard = useQuery({
     queryKey: ["dashboard", ownerFilter],
     queryFn: () => api<Dashboard>(`/dashboard?owner=${ownerFilter}`),
@@ -140,42 +112,29 @@ export default function DashboardPage() {
         </Card>
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              label="目前淨資產"
-              value={money(data.net_worth)}
-              subtext={`總資產 ${money(data.assets)} − 負債 ${money(data.liabilities)}`}
-              icon={Wallet}
-              tone="bg-emerald-50 text-emerald-700"
-            />
-            <StatCard
-              label="本月收入"
-              value={money(data.month_income)}
-              subtext="不包含帳戶間轉帳"
-              icon={IncomeIcon}
-              tone="bg-blue-50 text-blue-700"
-            />
-            <StatCard
-              label="本月支出"
-              value={money(data.month_expense)}
-              subtext="依交易分類彙整"
-              icon={ExpenseIcon}
-              tone="bg-orange-50 text-orange-700"
-            />
-            <StatCard
+          <section aria-label="淨資產" className="border-b border-ink pb-6">
+            <p className="text-sm text-slate-500">目前淨資產</p>
+            <p className="mt-1 font-display text-5xl font-semibold tracking-[-0.04em] text-ink sm:text-6xl">{money(data.net_worth)}</p>
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+              <span className={data.month_savings >= 0 ? "rounded bg-lime px-2 py-1 font-semibold text-[#111111]" : "rounded bg-red-50 px-2 py-1 font-semibold text-red-700"}>
+                本月{data.month_savings >= 0 ? "存下" : "超支"} {money(Math.abs(data.month_savings))}
+              </span>
+              <span>總資產 {money(data.assets)} − 負債 {money(data.liabilities)}</span>
+            </div>
+          </section>
+          <div className="grid grid-cols-2 border-b border-slate-200 xl:grid-cols-4">
+            <Figure className="border-b border-r pr-4 xl:border-b-0" label="本月收入" value={money(data.month_income)} subtext="不含帳戶互轉" />
+            <Figure className="border-b pl-4 xl:border-b-0 xl:border-r xl:pr-4" label="本月支出" value={money(data.month_expense)} subtext="依分類彙整" />
+            <Figure
+              className="border-r pr-4 xl:pl-4"
               label="本月儲蓄"
               value={money(data.month_savings)}
-              subtext={
-                data.savings_rate === null
-                  ? "加入收入資料後計算儲蓄率"
-                  : `儲蓄率 ${number(data.savings_rate, 1)}%`
-              }
-              icon={PiggyBank}
-              tone="bg-violet-50 text-violet-700"
+              subtext={data.savings_rate === null ? "有收入後計算儲蓄率" : `儲蓄率 ${number(data.savings_rate, 1)}%`}
             />
+            <Figure className="pl-4" label="總負債" value={money(data.liabilities)} subtext="信用卡與貸款" />
           </div>
 
-          <div className="mt-6 grid gap-6 xl:grid-cols-[1.6fr_1fr]">
+          <div className="mt-8 grid gap-6 xl:grid-cols-[1.6fr_1fr]">
             <Card className="p-5 sm:p-6">
               <div className="mb-5 flex items-center justify-between">
                 <div>
@@ -189,12 +148,12 @@ export default function DashboardPage() {
               <div className="h-[290px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={data.cashflow_trend} barGap={8} accessibilityLayer={false}>
-                    <CartesianGrid vertical={false} stroke="#e8eeeb" strokeDasharray="4 4" />
+                    <CartesianGrid vertical={false} stroke={chartTheme.grid} strokeDasharray="4 4" />
                     <XAxis dataKey="month" tickLine={false} axisLine={false} />
                     <YAxis tickLine={false} axisLine={false} width={64} tickFormatter={(value) => `${value / 1000}k`} />
-                    <Tooltip formatter={(value) => money(Number(value))} cursor={{ fill: "rgba(35, 132, 95, .08)" }} />
-                    <Bar dataKey="income" name="收入" fill="#23845f" radius={[5, 5, 0, 0]} maxBarSize={36} />
-                    <Bar dataKey="expense" name="支出" fill="#f1a15b" radius={[5, 5, 0, 0]} maxBarSize={36} />
+                    <Tooltip formatter={(value) => money(Number(value))} cursor={{ fill: "rgba(17, 17, 17, .04)" }} />
+                    <Bar dataKey="income" name="收入" fill={chartTheme.ink} radius={[5, 5, 0, 0]} maxBarSize={36} />
+                    <Bar dataKey="expense" name="支出" fill={chartTheme.muted} radius={[5, 5, 0, 0]} maxBarSize={36} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -262,9 +221,9 @@ export default function DashboardPage() {
                   <p className="mt-1 text-xs text-slate-400">每次更新餘額或行情後，保留當日資產紀錄</p>
                 </div>
                 <div className="flex flex-wrap gap-3 text-xs text-slate-500">
-                  <span className="flex items-center gap-1.5"><i className="size-2 rounded-full bg-emerald-600" />總資產</span>
-                  <span className="flex items-center gap-1.5"><i className="size-2 rounded-full bg-blue-500" />淨資產</span>
-                  <span className="flex items-center gap-1.5"><i className="size-2 rounded-full bg-red-400" />總負債</span>
+                  <span className="flex items-center gap-1.5"><i className="size-2 rounded-full bg-ink" />總資產</span>
+                  <span className="flex items-center gap-1.5"><i className="size-2 rounded-full bg-lime" />淨資產</span>
+                  <span className="flex items-center gap-1.5"><i className="size-2 rounded-full bg-red-700" />總負債</span>
                 </div>
               </div>
               {data.net_worth_trend.length ? (
@@ -273,11 +232,11 @@ export default function DashboardPage() {
                     <AreaChart data={data.net_worth_trend} accessibilityLayer={false}>
                       <defs>
                         <linearGradient id="assetTrendFill" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#23845f" stopOpacity={0.22} />
-                          <stop offset="95%" stopColor="#23845f" stopOpacity={0} />
+                          <stop offset="5%" stopColor={chartTheme.ink} stopOpacity={0.08} />
+                          <stop offset="95%" stopColor={chartTheme.ink} stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid vertical={false} stroke="#e8eeeb" strokeDasharray="4 4" />
+                      <CartesianGrid vertical={false} stroke={chartTheme.grid} strokeDasharray="4 4" />
                       <XAxis dataKey="date" tickLine={false} axisLine={false} minTickGap={24} />
                       <YAxis
                         tickLine={false}
@@ -290,23 +249,23 @@ export default function DashboardPage() {
                         type="monotone"
                         dataKey="assets"
                         name="總資產"
-                        stroke="#23845f"
-                        strokeWidth={2.5}
+                        stroke={chartTheme.ink}
+                        strokeWidth={1.8}
                         fill="url(#assetTrendFill)"
                       />
                       <Area
                         type="monotone"
                         dataKey="net_worth"
                         name="淨資產"
-                        stroke="#3b82f6"
-                        strokeWidth={2}
+                        stroke={chartTheme.accent}
+                        strokeWidth={2.2}
                         fill="transparent"
                       />
                       <Area
                         type="monotone"
                         dataKey="liabilities"
                         name="總負債"
-                        stroke="#f87171"
+                        stroke={chartTheme.danger}
                         strokeWidth={2}
                         strokeDasharray="5 5"
                         fill="transparent"
@@ -329,7 +288,7 @@ export default function DashboardPage() {
                   <h2 className="font-bold text-ink">本月支出重點</h2>
                   <p className="mt-1 text-xs text-slate-400">依分類排列</p>
                 </div>
-                <Sparkles size={19} className="text-amber-500" />
+                <Sparkles size={19} className="text-slate-400" />
               </div>
               {data.category_expenses.length ? (
                 <div className="mt-6 space-y-5">

@@ -40,7 +40,7 @@ export default function QuickTransactionForm({ kind, accounts, categories, owner
   return <form onSubmit={onSubmit} className="space-y-4" aria-label={kind === "expense" ? "快速記錄支出" : "快速記錄收入"}>
     <input type="hidden" name="transaction_kind" value={kind} />
     <div className="grid grid-cols-[minmax(0,1fr)_6rem] gap-3">
-      <Field label={kind === "expense" ? "花費金額" : "收到金額"}><Input name="amount" type="number" min="0.01" step="any" inputMode="decimal" placeholder="0" value={draft.amount} onChange={(event) => setDraft({ ...draft, amount: event.target.value })} required autoFocus className="h-14 text-2xl font-bold" /></Field>
+      <Field label={kind === "expense" ? "花費金額" : "收到金額"}><Input name="amount" type="number" min="0.01" step="any" inputMode="decimal" placeholder="0" value={draft.amount} onChange={(event) => setDraft({ ...draft, amount: event.target.value })} required autoFocus className="h-14 font-display text-2xl font-semibold tracking-tight" /></Field>
       <Field label="幣別"><Select name="currency" value={currency} onChange={(event) => setCurrency(event.target.value)} className="h-14">{currencyOptions(currency).map((value) => <option key={value}>{value}</option>)}</Select></Field>
     </div>
     <Field label={kind === "expense" ? "付款帳戶" : "入帳帳戶"}>

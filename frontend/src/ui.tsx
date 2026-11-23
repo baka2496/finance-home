@@ -33,6 +33,53 @@ export function Card({
   );
 }
 
+/** One headline number in the black-and-white style: small grey label, large ink figure, quiet note. */
+export function Figure({
+  label,
+  value,
+  subtext,
+  tone = "ink",
+  className,
+}: {
+  label: string;
+  value: ReactNode;
+  subtext?: ReactNode;
+  tone?: "ink" | "positive" | "negative";
+  className?: string;
+}) {
+  const tones = { ink: "text-ink", positive: "text-emerald-700", negative: "text-red-600" };
+  return (
+    <div className={cn("min-w-0 border-slate-200 py-4", className)}>
+      <p className="text-xs text-slate-500">{label}</p>
+      <p className={cn("mt-1 truncate font-display text-xl font-semibold tracking-tight tabular-nums sm:text-2xl", tones[tone])}>{value}</p>
+      {subtext && <p className="mt-1 text-xs text-slate-400">{subtext}</p>}
+    </div>
+  );
+}
+
+/** A row of Figures under a black top rule, split by hairlines instead of boxed cards. */
+export function FigureRow({
+  children,
+  label,
+  className,
+}: {
+  children: ReactNode;
+  label: string;
+  className?: string;
+}) {
+  return (
+    <section
+      aria-label={label}
+      className={cn(
+        "mb-6 grid grid-cols-1 divide-y divide-slate-200 border-y border-b-slate-200 border-t-ink sm:auto-cols-fr sm:grid-flow-col sm:divide-x sm:divide-y-0 sm:[&>*]:px-5 sm:[&>*:first-child]:pl-0 sm:[&>*:last-child]:pr-0",
+        className,
+      )}
+    >
+      {children}
+    </section>
+  );
+}
+
 export function Button({
   variant = "primary",
   type = "button",
@@ -42,7 +89,7 @@ export function Button({
   variant?: "primary" | "secondary" | "ghost" | "danger";
 }) {
   const styles = {
-    primary: "bg-forest text-white hover:bg-[#205245] shadow-sm",
+    primary: "bg-forest text-white hover:bg-slate-800",
     secondary: "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
     ghost: "text-slate-600 hover:bg-slate-100",
     danger: "bg-red-50 text-red-700 hover:bg-red-100",
@@ -753,7 +800,7 @@ export function Dialog({
       >
         <div className="z-10 flex shrink-0 items-start justify-between border-b border-slate-100 bg-white/95 px-4 py-4 backdrop-blur sm:px-6 sm:py-5">
           <div>
-            <h2 id={titleId} className="text-xl font-bold text-ink">{title}</h2>
+            <h2 id={titleId} className="font-display text-xl font-semibold tracking-tight text-ink">{title}</h2>
             {description && <p id={descriptionId} className="mt-1 text-sm text-slate-500">{description}</p>}
           </div>
           <button
@@ -787,7 +834,7 @@ export function EmptyState({
 }) {
   return (
     <div className="flex min-h-56 flex-col items-center justify-center px-6 text-center">
-      <div className="mb-4 rounded-2xl bg-emerald-50 p-4 text-emerald-700">{icon}</div>
+      <div className="mb-4 rounded-full border border-slate-200 p-4 text-ink">{icon}</div>
       <h3 className="font-semibold text-slate-800">{title}</h3>
       <p className="mt-1 max-w-md text-sm leading-6 text-slate-500">{description}</p>
       {action && <div className="mt-5">{action}</div>}
@@ -810,9 +857,9 @@ export function PageHeader({
     <header className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
       <div>
         {eyebrow && (
-          <p className="mb-2 text-xs font-bold uppercase tracking-[.2em] text-emerald-700">{eyebrow}</p>
+          <p className="mb-2 text-xs font-medium tracking-[.2em] text-slate-500">{eyebrow}</p>
         )}
-        <h1 className="text-3xl font-bold tracking-tight text-ink">{title}</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-ink">{title}</h1>
         <p className="mt-2 text-sm text-slate-500">{description}</p>
       </div>
       {action}
@@ -848,7 +895,7 @@ export function Badge({
     green: "bg-emerald-50 text-emerald-700",
     amber: "bg-amber-50 text-amber-700",
     red: "bg-red-50 text-red-700",
-    blue: "bg-blue-50 text-blue-700",
+    blue: "bg-slate-100 text-ink",
   };
   return <span className={cn("inline-flex rounded-full px-2.5 py-1 text-xs font-medium", tones[tone])}>{children}</span>;
 }
