@@ -198,7 +198,9 @@ describe("amounts show the currency mark small and grey", () => {
     const mark = container.querySelector("span > span")!;
     expect(mark.textContent).toBe(currency);
     expect(mark.className).toContain("text-[0.5em]");
-    expect(container.textContent).toBe(`${sign}${currency}${digits}`);
+    // 2026-11-23: a big "+" in front of a small "NT$" looked broken, so the sign sits next to the digits.
+    expect(container.textContent).toBe(`${currency}${sign}${digits}`);
+    expect(container.firstElementChild!.firstElementChild).toBe(mark);
   });
 
   it("big figures on the overview, tiles and account cards use it", () => {

@@ -48,8 +48,8 @@ export function Amount({ value, className }: { value: string; className?: string
   const [, sign, currency, digits] = match;
   return (
     <span className={className}>
-      {sign}
       <span className="mr-[0.08em] align-baseline text-[0.5em] font-medium tracking-normal text-slate-400">{currency}</span>
+      {sign}
       {digits}
     </span>
   );
