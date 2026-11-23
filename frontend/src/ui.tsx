@@ -41,15 +41,14 @@ const figureIconTones = {
   slate: "bg-slate-100 text-slate-600",
 };
 
-/** A large amount with the currency mark ("NT$", "US$") shown small and grey in front of the number. */
+/** A large amount with the currency code ("TWD", "USD") shown small and grey in front of the number. */
 export function Amount({ value, className }: { value: string; className?: string }) {
-  const match = /^([+\-−]?)([A-Z]{0,3}\$|[€£¥])?(.*)$/.exec(value);
-  if (!match || !match[2]) return <span className={className}>{value}</span>;
-  const [, sign, currency, digits] = match;
+  const match = /^([A-Z]{3,5}) (.*)$/.exec(value);
+  if (!match) return <span className={className}>{value}</span>;
+  const [, currency, digits] = match;
   return (
     <span className={className}>
-      <span className="mr-[0.08em] align-baseline text-[0.5em] font-medium tracking-normal text-slate-400">{currency}</span>
-      {sign}
+      <span className="mr-[0.3em] align-baseline text-[0.5em] font-medium tracking-normal text-slate-400">{currency}</span>
       {digits}
     </span>
   );
@@ -888,17 +887,25 @@ export function PageHeader({
   );
 }
 
-export const money = (value: number, currency = "TWD") => {
+/**
+ * Money is written the way Taiwanese bank accounts show it: the currency code, a space,
+ * then the number with its sign, e.g. "TWD 12,345", "TWD −1,280", "USD 67,000.00".
+ * `signed` adds "+" to positive amounts; only use it where colour does not already show the direction.
+ */
+export const money = (value: number, currency = "TWD", options: { signed?: boolean } = {}) => {
   const amount = value || 0;
-  if (currency === "TWD") {
-    const sign = amount < 0 ? "-" : "";
-    return `${sign}NT$${new Intl.NumberFormat("zh-TW", { maximumFractionDigits: 0 }).format(Math.abs(amount))}`;
+  const code = (currency || "TWD").toUpperCase();
+  let decimals = 0;
+  if (code !== "TWD") {
+    try {
+      decimals = new Intl.NumberFormat("en-US", { style: "currency", currency: code }).resolvedOptions().minimumFractionDigits ?? 2;
+    } catch {
+      decimals = 2;
+    }
   }
-  return new Intl.NumberFormat("zh-TW", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 2,
-  }).format(amount);
+  const digits = new Intl.NumberFormat("zh-TW", { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(Math.abs(amount));
+  const sign = amount < 0 ? "−" : options.signed && amount > 0 ? "+" : "";
+  return `${code} ${sign}${digits}`;
 };
 
 export const number = (value: number, digits = 0) =>

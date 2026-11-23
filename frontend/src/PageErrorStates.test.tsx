@@ -37,12 +37,12 @@ it("shows an explicit investments load failure", async () => {
 it("shows an explicit analysis load failure", async () => {
   show(<AnalysisPage />);
   await screen.findByText("財務分析載入失敗");
-  expect(screen.queryByText("NT$0")).toBeNull();
+  expect(screen.queryAllByText((_, element) => element?.textContent === "TWD 0")).toHaveLength(0);
 });
 it("shows an explicit dashboard load failure", async () => {
   show(<DashboardPage />);
   await screen.findByText(/無法載入財務資料|財務資料載入失敗|總覽.*載入失敗/);
-  expect(screen.queryByText("NT$0")).toBeNull();
+  expect(screen.queryAllByText((_, element) => element?.textContent === "TWD 0")).toHaveLength(0);
 });
 it("does not describe failed transaction loading as an empty month", async () => {
   show(<TransactionsPage />);

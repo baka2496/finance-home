@@ -94,7 +94,7 @@ function RecentTransactions({ owner }: { owner: string }) {
                   <p className="truncate text-xs text-slate-500">{item.category_name || "未分類"} · {item.transaction_date.slice(5).replace("-", "/")}</p>
                 </div>
                 <span className={`shrink-0 text-[15px] font-semibold tabular-nums ${income ? "text-emerald-700" : "text-ink"}`}>
-                  {income ? "" : "−"}{money(Math.abs(item.base_amount))}
+                  {money(item.base_amount)}
                 </span>
               </li>
             );

@@ -9,7 +9,7 @@ import QuickTransactionForm from "./QuickTransactionForm";
 import { priceSourceLabel } from "./pages/InvestmentsPage";
 import { chartThemeFor } from "./chartTheme";
 import type { Account, Category } from "./types";
-import { Amount, Button, Dialog } from "./ui";
+import { Amount, Button, Dialog, money } from "./ui";
 
 afterEach(() => { cleanup(); sessionStorage.clear(); localStorage.clear(); });
 
@@ -186,20 +186,41 @@ describe("the chosen look stays consistent", () => {
   });
 });
 
-describe("amounts show the currency mark small and grey", () => {
-  // 2026-11-23: the user asked for a small "NT$" in front of big numbers, like the A mockup.
+describe("amounts show the currency code small and grey", () => {
+  // 2026-11-23: the user asked for a small currency mark in front of big numbers, then asked
+  // why "$" was there and picked the bank-account style "TWD 12,345" / "USD 67,000.00".
   it.each([
-    ["NT$1,284,560", "", "NT$", "1,284,560"],
-    ["-NT$12,680", "-", "NT$", "12,680"],
-    ["+NT$47,051", "+", "NT$", "47,051"],
-    ["US$67,000.00", "", "US$", "67,000.00"],
-  ])("%s", (value, sign, currency, digits) => {
+    [1284560, "TWD", "TWD 1,284,560"],
+    [-12680, "TWD", "TWD −12,680"],
+    [0, "TWD", "TWD 0"],
+    [67000, "USD", "USD 67,000.00"],
+    [1500, "JPY", "JPY 1,500"],
+  ])("money(%s, %s) is %s", (value, currency, expected) => {
+    expect(money(value, currency)).toBe(expected);
+  });
+
+  it("never writes NT$ or US$ anywhere in the pages", () => {
+    for (const { name, source } of pageSources) {
+      expect(source, name).not.toMatch(/NT\$|US\$/);
+    }
+  });
+
+  it("a plus sign only appears when asked for", () => {
+    expect(money(5000)).toBe("TWD 5,000");
+    expect(money(5000, "TWD", { signed: true })).toBe("TWD +5,000");
+  });
+
+  it.each([
+    ["TWD 1,284,560", "TWD", "1,284,560"],
+    ["TWD −12,680", "TWD", "−12,680"],
+    ["USD 67,000.00", "USD", "67,000.00"],
+  ])("%s", (value, currency, digits) => {
     const { container } = render(<Amount value={value} />);
     const mark = container.querySelector("span > span")!;
     expect(mark.textContent).toBe(currency);
     expect(mark.className).toContain("text-[0.5em]");
-    // 2026-11-23: a big "+" in front of a small "NT$" looked broken, so the sign sits next to the digits.
-    expect(container.textContent).toBe(`${currency}${sign}${digits}`);
+    // 2026-11-23: a big "+" in front of a small currency mark looked broken, so the sign sits next to the digits.
+    expect(container.textContent).toBe(`${currency}${digits}`);
     expect(container.firstElementChild!.firstElementChild).toBe(mark);
   });
 

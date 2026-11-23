@@ -348,7 +348,7 @@ export default function AnalysisPage() {
             {spending.isError && !spending.data ? (
               <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-center">
                 <p className="text-sm font-semibold text-amber-900">這個月份的消費資料載入失敗</p>
-                <p className="mt-1 text-xs text-amber-700">目前不會顯示 NT$0，以免誤以為沒有消費。</p>
+                <p className="mt-1 text-xs text-amber-700">目前不會顯示 TWD 0，以免誤以為沒有消費。</p>
                 <Button className="mt-4" variant="secondary" onClick={() => spending.refetch()}>重新載入</Button>
               </div>
             ) : spending.isPending ? (

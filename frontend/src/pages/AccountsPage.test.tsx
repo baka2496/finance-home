@@ -112,7 +112,7 @@ it("associates a payment with the pending formal bill when one exists", async ()
   );
 
   const card = await screen.findByRole("region", { name: "國泰世華銀行 信用卡 帳戶摘要" });
-  await within(card).findByText("NT$9,027");
+  await within(card).findByText("TWD 9,027");
   await user.click(within(card).getByRole("button", { name: "記錄繳款" }));
   const dialog = screen.getByRole("dialog", { name: "記錄信用卡繳款" });
   expect((within(dialog).getByRole("spinbutton", { name: "繳款金額（TWD）" }) as HTMLInputElement).value).toBe("9027");
@@ -143,21 +143,21 @@ it("links a selected existing debit without creating another bank debit", async 
   );
 
   const card = await screen.findByRole("region", { name: "國泰世華銀行 信用卡 帳戶摘要" });
-  await within(card).findByText("NT$9,027");
+  await within(card).findByText("TWD 9,027");
   await user.click(within(card).getByRole("button", { name: "記錄繳款" }));
   const dialog = screen.getByRole("dialog", { name: "記錄信用卡繳款" });
   expect(vi.mocked(api).mock.calls.some(([path]) => path.startsWith("/card-payment-candidates"))).toBe(false);
   await user.click(within(dialog).getByRole("checkbox", { name: /已在付款帳戶記錄扣款/ }));
-  expect(await within(dialog).findByRole("option", { name: /2026-09-23 · 國泰信用卡自動扣繳 · NT\$5,000/ })).toBeTruthy();
+  expect(await within(dialog).findByRole("option", { name: /2026-09-23 · 國泰信用卡自動扣繳 · TWD 5,000/ })).toBeTruthy();
   expect(within(dialog).getByRole("option", { name: /銀行匯入/ })).toBeTruthy();
   expect(within(dialog).getByRole("button", { name: "儲存繳款" }).hasAttribute("disabled")).toBe(true);
   expect(vi.mocked(api).mock.calls.some(([path]) => path === "/card-payment-candidates?card_account_id=1&payment_account_id=2")).toBe(true);
   await user.click(within(dialog).getByRole("button", { name: "已記錄的扣款" }));
   await user.click(within(within(dialog).getByRole("listbox", { name: "已記錄的扣款" })).getByRole("option", { name: /2026-09-23 · 國泰信用卡自動扣繳/ }));
-  expect(within(dialog).getByText("繳款金額：NT$5,000")).toBeTruthy();
+  expect(within(dialog).getByText("繳款金額：TWD 5,000")).toBeTruthy();
   expect(within(dialog).getByText("繳款日期：2026-09-23")).toBeTruthy();
   expect((within(dialog).getByRole("checkbox", { name: /這筆扣款用來銷帳目前帳單/ }) as HTMLInputElement).checked).toBe(false);
-  expect(within(dialog).getByText(/繳款期限 2026-10-23 · 尚待繳 NT\$9,027/)).toBeTruthy();
+  expect(within(dialog).getByText(/繳款期限 2026-10-23 · 尚待繳 TWD 9,027/)).toBeTruthy();
   expect(within(dialog).queryByRole("spinbutton", { name: "繳款金額（TWD）" })).toBeNull();
   await user.click(within(dialog).getByRole("button", { name: "儲存繳款" }));
 
@@ -198,7 +198,7 @@ it("only assigns an existing debit to the current bill when explicitly selected"
   );
 
   const card = await screen.findByRole("region", { name: "國泰世華銀行 信用卡 帳戶摘要" });
-  await within(card).findByText("NT$9,027");
+  await within(card).findByText("TWD 9,027");
   await user.click(within(card).getByRole("button", { name: "記錄繳款" }));
   const dialog = screen.getByRole("dialog", { name: "記錄信用卡繳款" });
   await user.click(within(dialog).getByRole("checkbox", { name: /已在付款帳戶記錄扣款/ }));
@@ -290,7 +290,8 @@ it("keeps the credit-card summary compact and gives clear next actions", async (
   expect(within(card).queryByRole("button", { name: /更新餘額|更新負債/ })).toBeNull();
   expect(within(card).getByRole("button", { name: "記錄繳款" })).toBeTruthy();
   expect(within(card).queryByText("國泰世華銀行")).toBeNull();
-  expect(within(card).queryByText("TWD")).toBeNull();
+  // No currency badge; the small code inside the amount itself is fine.
+  expect(within(card).queryAllByText("TWD").filter((element) => !element.className.includes("text-[0.5em]"))).toHaveLength(0);
   expect(within(card).queryByText(/負債依消費與繳款記錄更新/)).toBeNull();
   expect(within(card).queryByText(/帳期範圍等待正式帳單確認/)).toBeNull();
 

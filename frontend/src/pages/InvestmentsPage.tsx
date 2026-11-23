@@ -1185,7 +1185,7 @@ export default function InvestmentsPage() {
                   • {selectedCashAccount.name}：
                   {balanceIncludesPositions
                     ? "帳戶總額不重複變動"
-                    : `${tradeSide === "buy" ? "−" : "+"}${money(tradeTotalValue, selectedCurrency)}`}
+                    : money(tradeSide === "buy" ? -tradeTotalValue : tradeTotalValue, selectedCurrency, { signed: true })}
                 </p>
                 <p>• 不會列入日常收入或支出</p>
               </div>
