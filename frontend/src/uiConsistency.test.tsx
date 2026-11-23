@@ -203,6 +203,14 @@ describe("amounts show the currency mark small and grey", () => {
     expect(container.firstElementChild!.firstElementChild).toBe(mark);
   });
 
+  it("green gains and income carry no plus sign, because the green already says it", () => {
+    // 2026-11-23: the user said "綠色就是漲阿，為甚麼要+".
+    for (const name of ["DashboardPage.tsx", "InvestmentsPage.tsx", "TransactionsPage.tsx"]) {
+      const source = pageSources.find((p) => p.name === name)!.source;
+      expect(source, name).not.toMatch(/(>= 0|income) \? "\+"/);
+    }
+  });
+
   it("big figures on the overview, tiles and account cards use it", () => {
     expect(readFileSync(join(srcDir, "ui.tsx"), "utf8")).toContain('typeof value === "string" ? <Amount value={value} /> : value');
     expect(pageSources.find((p) => p.name === "DashboardPage.tsx")!.source).toContain("<Amount value={money(data.net_worth)} />");

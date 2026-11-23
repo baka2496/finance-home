@@ -652,12 +652,12 @@ export default function InvestmentsPage() {
           icon={totalProfit >= 0 ? <TrendingUp size={17} /> : <TrendingDown size={17} />}
           iconTone={totalProfit >= 0 ? "green" : "red"}
           label="未實現損益（折合 TWD）"
-          value={`${totalProfit >= 0 ? "+" : ""}${money(totalProfit)}`}
+          value={money(totalProfit)}
           tone={totalProfit >= 0 ? "positive" : "negative"}
           subtext={totals.futures
             ? "含幣安合約未實現損益"
             : totalCost
-              ? `${totalProfit >= 0 ? "+" : ""}${number((totalProfit / totalCost) * 100, 2)}%`
+              ? `${number((totalProfit / totalCost) * 100, 2)}%`
               : "尚無成本資料"}
         />
       </FigureRow>
@@ -723,7 +723,7 @@ export default function InvestmentsPage() {
                             {position.instrument_type === "futures" ? "名目 " : ""}{money(position.market_value_twd)}
                           </p>
                           <p className={`mt-0.5 text-xs font-semibold ${position.profit_twd >= 0 ? "text-emerald-700" : "text-red-600"}`}>
-                            {position.profit_twd >= 0 ? "+" : ""}{money(position.profit_twd)}
+                            {money(position.profit_twd)}
                             {position.instrument_type !== "futures" ? ` · ${number(position.profit_pct || 0, 2)}%` : ""}
                           </p>
                         </div>
@@ -857,7 +857,7 @@ export default function InvestmentsPage() {
                     </td>
                     <td className="px-4 py-4 text-right">
                       <p className={`text-sm font-bold ${position.profit_twd >= 0 ? "text-emerald-700" : "text-red-600"}`}>
-                        {position.profit_twd >= 0 ? "+" : ""}{money(position.profit_twd)}
+                        {money(position.profit_twd)}
                       </p>
                       {position.instrument_type !== "futures" && position.profit_pct !== undefined && (
                         <p className={`mt-1 inline-flex items-center gap-1 text-xs ${position.profit_twd >= 0 ? "text-emerald-600" : "text-red-500"}`}>
