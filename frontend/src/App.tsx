@@ -155,7 +155,7 @@ function MobileQuickActions() {
       <button
         type="button"
         aria-label="新增交易"
-        className="grid size-14 place-items-center rounded-2xl bg-forest text-white shadow-xl shadow-emerald-950/25 transition active:scale-95"
+        className="grid size-14 place-items-center rounded-full bg-accent text-white shadow-lift transition active:scale-95"
         onClick={() => navigate("/transactions?quick=expense")}
       >
         <Plus size={25} />
@@ -206,7 +206,7 @@ function Sidebar({
       )}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex flex-col bg-forest text-white transition-all duration-300",
+          "app-sidebar fixed inset-y-0 left-0 z-40 flex flex-col border-r border-slate-200/70 bg-white/85 text-ink backdrop-blur-xl transition-all duration-300",
           compact ? "lg:w-[86px]" : "lg:w-[250px]",
           mobileOpen ? "visible w-[270px] translate-x-0" : "invisible w-[270px] -translate-x-full lg:visible lg:translate-x-0",
         )}
@@ -215,16 +215,16 @@ function Sidebar({
           <img
             src="/finance-home-icon-192.png"
             alt="財務居"
-            className="size-12 shrink-0 rounded-2xl border-2 border-white/20 object-cover shadow-lg shadow-black/15"
+            className="size-11 shrink-0 rounded-[14px] object-cover shadow-soft"
           />
           {!compact && (
             <div className="min-w-0">
               <div className="text-lg font-bold tracking-wide">財務居</div>
-              <div className="text-xs text-emerald-100/60">Personal Finance</div>
+              <div className="text-xs text-slate-400">Personal Finance</div>
             </div>
           )}
           <button
-            className="ml-auto rounded-lg p-2 text-emerald-100/70 hover:bg-white/10 lg:hidden"
+            className="ml-auto rounded-lg p-2 text-slate-400 hover:bg-slate-100 lg:hidden"
             aria-label="關閉導覽選單"
             onClick={onMobileClose}
           >
@@ -243,8 +243,8 @@ function Sidebar({
                 cn(
                   "group flex h-12 items-center gap-3 rounded-xl px-4 text-sm font-medium transition",
                   isActive
-                    ? "bg-white text-forest shadow-sm"
-                    : "text-emerald-50/70 hover:bg-white/10 hover:text-white",
+                    ? "bg-accent-soft font-semibold text-accent"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-ink",
                   compact && "lg:justify-center lg:px-0",
                 )
               }
@@ -253,7 +253,7 @@ function Sidebar({
               {!compact && <span>{label}</span>}
             </NavLink>
           ))}
-          <div className="my-3 border-t border-white/10" />
+          <div className="my-3 border-t border-slate-200/70" />
           {secondaryNavigation.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
@@ -263,8 +263,8 @@ function Sidebar({
                 cn(
                   "group flex h-11 items-center gap-3 rounded-xl px-4 text-sm font-medium transition",
                   isActive
-                    ? "bg-white text-forest shadow-sm"
-                    : "text-emerald-50/70 hover:bg-white/10 hover:text-white",
+                    ? "bg-accent-soft font-semibold text-accent"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-ink",
                   compact && "lg:justify-center lg:px-0",
                 )
               }
@@ -275,8 +275,8 @@ function Sidebar({
           ))}
         </nav>
 
-        <div className="border-t border-white/10 p-3">
-          <div className={cn("rounded-2xl border border-white/10 bg-white/5 p-3", compact && "lg:hidden")}>
+        <div className="border-t border-slate-200/70 p-3">
+          <div className={cn("rounded-2xl bg-slate-50 p-3", compact && "lg:hidden")}>
             <input
               ref={avatarInputRef}
               type="file"
@@ -288,7 +288,7 @@ function Sidebar({
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                className="group relative grid size-11 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-200 text-sm font-bold text-[#111111] ring-2 ring-emerald-100/20 transition hover:ring-emerald-100/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="group relative grid size-11 shrink-0 place-items-center overflow-hidden rounded-full bg-accent-soft text-sm font-bold text-accent ring-2 ring-white transition hover:ring-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 onClick={() => avatarInputRef.current?.click()}
                 aria-label="更換大頭照"
                 title="更換大頭照"
@@ -302,20 +302,20 @@ function Sidebar({
                 <p className="truncate text-sm font-semibold">
                   {session.data_location === "cloud" ? "雲端財務資料" : "本機財務資料"}
                 </p>
-                <p className="truncate text-xs text-emerald-100/70">
+                <p className="truncate text-xs text-slate-500">
                   {session.required ? "登入狀態：已登入" : session.data_location === "cloud" ? "儲存在雲端" : "儲存在這台電腦"}
                 </p>
                 {session.required && (
-                  <p className="truncate text-xs text-emerald-100/55" title={formatSessionExpiration(session.session_expires_at)}>
+                  <p className="truncate text-xs text-slate-400" title={formatSessionExpiration(session.session_expires_at)}>
                     {`工作階段至 ${formatSessionExpiration(session.session_expires_at)}`}
                   </p>
                 )}
               </div>
             </div>
-            {avatarError && <p role="alert" className="mt-2 text-xs text-amber-200">{avatarError}</p>}
+            {avatarError && <p role="alert" className="mt-2 text-xs text-amber-700">{avatarError}</p>}
             {session.required && (
               <button
-                className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 py-2 text-xs font-medium text-emerald-50/80 hover:bg-white/10"
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100"
                 onClick={clearAuthToken}
               >
                 <LogOut size={14} /> 登出
@@ -323,7 +323,7 @@ function Sidebar({
             )}
           </div>
           <button
-            className="mt-2 hidden h-10 w-full items-center justify-center rounded-xl text-emerald-100/60 transition hover:bg-white/10 hover:text-white lg:flex"
+            className="mt-2 hidden h-10 w-full items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-ink lg:flex"
             onClick={onToggle}
             aria-label="切換側邊欄"
           >
@@ -399,7 +399,7 @@ function LoginScreen() {
                 ? "bg-emerald-500"
                 : serverStatus === "error"
                   ? "bg-amber-500"
-                  : "animate-pulse bg-lime",
+                  : "animate-pulse bg-accent",
             )}
           />
           {serverStatus === "ready"

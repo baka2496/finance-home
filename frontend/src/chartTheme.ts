@@ -1,23 +1,23 @@
 import { useEffect, useState } from "react";
 
-// Shared chart colors for the "B 極簡黑白" style: ink for the main series,
-// warm grey for the comparison series, lime only as the single accent.
+// Shared chart colors. Light mode is "A 清透卡片" (indigo main series, soft lavender
+// comparison, friendly category tints); dark mode is "C 深色高級" (champagne gold).
 const light = {
-  ink: "#111111",
-  muted: "#c9c8c0",
-  accent: "#b5d62f",
-  danger: "#b4412c",
-  grid: "#e2e1da",
-  categorical: ["#111111", "#c6e83a", "#8a8a84", "#c9c8c0", "#4a4a46", "#e2e1da"],
+  ink: "#5b6cf0",
+  muted: "#d3d7f6",
+  accent: "#1a7f4b",
+  danger: "#d4553f",
+  grid: "#ececf0",
+  categorical: ["#5b6cf0", "#f29a3a", "#2fb36f", "#ef6f8e", "#30a9c4", "#a07be8"],
 };
 
 const dark: typeof light = {
-  ink: "#f2f2ee",
-  muted: "#5a5a55",
-  accent: "#d7f75b",
+  ink: "#d9bf8c",
+  muted: "#4a453e",
+  accent: "#9fd3a8",
   danger: "#f08a74",
-  grid: "#2a2a28",
-  categorical: ["#f2f2ee", "#d7f75b", "#8a8a84", "#5a5a55", "#bdbdb7", "#353532"],
+  grid: "#2a2825",
+  categorical: ["#d9bf8c", "#9fd3a8", "#8fb3e0", "#e59b8c", "#b9a3d9", "#e0c46c"],
 };
 
 export type ChartTheme = typeof light;

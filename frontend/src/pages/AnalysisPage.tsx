@@ -35,7 +35,7 @@ import { invalidateFinanceData } from "../appQueries";
 import { taipeiMonthInputValue } from "../date";
 import { ownerFilterLabels, useOwnerFilter } from "../ownerFilter";
 import type { Account, Category, Dashboard, HealthScore, IgnoredRecurringExpense, RecurringExpenseDefinition, SpendingAnalysis } from "../types";
-import { Badge, Button, Card, Dialog, EmptyState, Field, FormOptions, Input, MonthInput, PageHeader, Select, Skeleton, money, number } from "../ui";
+import { Amount, Badge, Button, Card, Dialog, EmptyState, Field, FormOptions, Input, MonthInput, PageHeader, Select, Skeleton, money, number } from "../ui";
 import { useChartTheme } from "../chartTheme";
 
 const recurringPresets = ["房貸", "車貸", "信貸", "學貸", "房租", "保險", "健身房月費", "手機費", "網路費", "訂閱服務"];
@@ -90,16 +90,16 @@ function indicatorState(key: string, value: number | null) {
   }
   if (key === "savings") {
     return value >= 20
-      ? { label: "穩定", iconClass: "border border-slate-200 text-ink", badgeTone: "green" as const, message: "儲蓄率已達 20% 以上。" }
+      ? { label: "穩定", iconClass: "bg-emerald-50 text-emerald-700", badgeTone: "green" as const, message: "儲蓄率已達 20% 以上。" }
       : { label: "需留意", iconClass: "bg-amber-50 text-amber-700", badgeTone: "amber" as const, message: "可先從最高的非必要支出開始調整。" };
   }
   if (key === "debt") {
     return value <= 20
-      ? { label: "穩定", iconClass: "border border-slate-200 text-ink", badgeTone: "green" as const, message: "每月還款壓力目前在理想範圍。" }
+      ? { label: "穩定", iconClass: "bg-emerald-50 text-emerald-700", badgeTone: "green" as const, message: "每月還款壓力目前在理想範圍。" }
       : { label: "需留意", iconClass: "bg-amber-50 text-amber-700", badgeTone: "amber" as const, message: "建議先降低每月還款壓力，再考慮新增負債。" };
   }
   return value >= 6
-    ? { label: "充足", iconClass: "border border-slate-200 text-ink", badgeTone: "green" as const, message: "已超過 6 個月必要支出的建議水位。" }
+    ? { label: "充足", iconClass: "bg-emerald-50 text-emerald-700", badgeTone: "green" as const, message: "已超過 6 個月必要支出的建議水位。" }
     : { label: "需留意", iconClass: "bg-amber-50 text-amber-700", badgeTone: "amber" as const, message: "建議先累積到至少 3 個月的必要支出。" };
 }
 
@@ -297,9 +297,9 @@ export default function AnalysisPage() {
                 const isMissing = value === null;
                 const needsAttention = !isMissing && item.state.label === "需留意";
                 return (
-                  <div key={item.key} className="border-t border-ink pt-4">
+                  <div key={item.key} className="rounded-2xl bg-slate-50 p-5">
                     <div className="flex items-start justify-between gap-3">
-                      <div className={`grid size-9 shrink-0 place-items-center rounded-full ${item.state.iconClass}`}>
+                      <div className={`grid size-10 shrink-0 place-items-center rounded-xl ${item.state.iconClass}`}>
                         {isMissing ? <CircleHelp size={18} /> : needsAttention ? <AlertTriangle size={18} /> : <CheckCircle2 size={18} />}
                       </div>
                       <Badge tone={item.state.badgeTone}>{item.state.label}</Badge>
@@ -321,7 +321,7 @@ export default function AnalysisPage() {
           <Card className="mt-6 p-5 sm:p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
-                <div className="rounded-full border border-slate-200 p-2.5 text-ink"><PieChartIcon size={18} /></div>
+                <div className="rounded-xl bg-accent-soft p-2.5 text-accent"><PieChartIcon size={18} /></div>
                 <div>
                   <h2 className="font-bold text-ink">本月消費分布</h2>
                   <p className="mt-1 text-xs text-slate-400">{monthLabel} · {ownerFilterLabels[ownerFilter]} · 依支出分類統計</p>
@@ -340,7 +340,7 @@ export default function AnalysisPage() {
                   <p className="text-xs text-slate-400">當月總支出</p>
                   {spending.isPending
                     ? <Skeleton className="mt-1 h-6 w-24 sm:ml-auto" />
-                    : <p className="mt-0.5 font-display text-xl font-semibold tracking-tight text-slate-800">{spending.data ? money(totalExpense) : "—"}</p>}
+                    : <p className="mt-0.5 font-display text-xl font-semibold tracking-tight text-slate-800">{spending.data ? <Amount value={money(totalExpense)} /> : "—"}</p>}
                 </div>
               </div>
             </div>
@@ -371,6 +371,8 @@ export default function AnalysisPage() {
                           innerRadius={70}
                           outerRadius={105}
                           paddingAngle={2}
+                          cornerRadius={6}
+                          isAnimationActive={false}
                           stroke="transparent"
                         >
                           {categoryExpenses.map((item, index) => (
@@ -391,7 +393,7 @@ export default function AnalysisPage() {
                     </ResponsiveContainer>
                     <div className="pointer-events-none absolute inset-0 grid place-content-center text-center">
                       <p className="text-xs text-slate-400">總消費</p>
-                      <p className="mt-1 font-display text-xl font-semibold tracking-tight text-slate-800">{money(totalExpense)}</p>
+                      <p className="mt-1 font-display text-xl font-semibold tracking-tight text-slate-800"><Amount value={money(totalExpense)} /></p>
                     </div>
                   </div>
                   <div ref={setSpendingTooltipHost} className="relative mt-2 min-h-16" />
@@ -412,7 +414,7 @@ export default function AnalysisPage() {
                         <div className="ml-8 h-2 overflow-hidden rounded-full bg-slate-100">
                           <div
                             className="h-full rounded-full transition-[width]"
-                            style={{ width: `${Math.min(100, percentage)}%`, backgroundColor: chartTheme.ink }}
+                            style={{ width: `${Math.min(100, percentage)}%`, backgroundColor: chartTheme.categorical[index % chartTheme.categorical.length] }}
                           />
                         </div>
                       </div>
@@ -432,7 +434,7 @@ export default function AnalysisPage() {
           <Card className="mt-6 p-5 sm:p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
-                <div className="rounded-full border border-slate-200 p-2.5 text-ink"><Repeat2 size={18} /></div>
+                <div className="rounded-xl bg-accent-soft p-2.5 text-accent"><Repeat2 size={18} /></div>
                 <div>
                   <h2 className="font-bold text-ink">每月固定花費</h2>
                   <p className="mt-1 text-xs text-slate-400">自動辨識重複交易，也可以自行建立房貸、車貸、信貸與月費</p>
@@ -448,7 +450,7 @@ export default function AnalysisPage() {
                 </Button>
                 <div className="rounded-xl bg-slate-50 px-4 py-3 sm:text-right">
                   <p className="text-xs text-slate-400">預估每月固定支出</p>
-                  <p className="mt-0.5 font-display text-xl font-semibold tracking-tight text-slate-800">{spending.data ? money(spending.data.estimated_recurring_total || 0) : "—"}</p>
+                  <p className="mt-0.5 font-display text-xl font-semibold tracking-tight text-slate-800">{spending.data ? <Amount value={money(spending.data.estimated_recurring_total || 0)} /> : "—"}</p>
                 </div>
               </div>
             </div>
@@ -714,7 +716,7 @@ export default function AnalysisPage() {
           <div className="mt-6 grid gap-6 xl:grid-cols-[1.25fr_.75fr]">
             <Card className="p-6">
               <div className="flex items-center gap-3">
-                <div className="rounded-full border border-slate-200 p-2.5 text-ink"><TrendingUp size={18} /></div>
+                <div className="rounded-xl bg-accent-soft p-2.5 text-accent"><TrendingUp size={18} /></div>
                 <div>
                   <h2 className="font-bold text-ink">現金流趨勢</h2>
                   <p className="mt-1 text-xs text-slate-400">最近六個月收入與支出</p>
@@ -736,7 +738,7 @@ export default function AnalysisPage() {
 
             <Card className="p-6">
               <div className="flex items-center gap-3">
-                <div className="rounded-full border border-slate-200 p-2.5 text-ink"><Lightbulb size={18} /></div>
+                <div className="rounded-xl bg-amber-50 p-2.5 text-amber-600"><Lightbulb size={18} /></div>
                 <div>
                   <h2 className="font-bold text-ink">本月建議</h2>
                   <p className="mt-1 text-xs text-slate-400">依目前資料產生</p>

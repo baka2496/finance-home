@@ -793,7 +793,7 @@ export default function SettingsPage() {
               className={cn(
                 "flex h-11 min-w-28 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition",
                 theme === "light"
-                  ? "bg-white text-forest shadow-sm ring-1 ring-slate-200"
+                  ? "bg-white text-ink shadow-sm ring-1 ring-slate-200"
                   : "text-slate-500 hover:bg-white/70 hover:text-slate-800",
               )}
               onClick={() => changeTheme("light")}
@@ -806,7 +806,7 @@ export default function SettingsPage() {
               className={cn(
                 "flex h-11 min-w-28 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition",
                 theme === "dark"
-                  ? "bg-forest text-white shadow-sm ring-1 ring-emerald-500/30"
+                  ? "bg-accent text-white shadow-sm"
                   : "text-slate-500 hover:bg-white/70 hover:text-slate-800",
               )}
               onClick={() => changeTheme("dark")}
@@ -829,7 +829,7 @@ export default function SettingsPage() {
         <Card className="settings-detail-card p-6">
           <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
             <div className="flex items-start gap-4">
-              <div className="rounded-full border border-slate-200 p-3 text-ink"><Database size={20} /></div>
+              <div className="rounded-xl bg-accent-soft p-3 text-accent"><Database size={20} /></div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="font-bold text-ink">資料備份</h2>
@@ -888,7 +888,7 @@ export default function SettingsPage() {
         >
         <Card className="settings-detail-card p-6">
           <div className="flex items-start gap-4">
-            <div className="rounded-full border border-slate-200 p-3 text-ink"><RefreshCw size={20} /></div>
+            <div className="rounded-xl bg-accent-soft p-3 text-accent"><RefreshCw size={20} /></div>
             <div className="flex-1">
               <h2 className="font-bold text-ink">行情與匯率</h2>
               <p className="mt-2 text-sm leading-6 text-slate-500">
@@ -1110,7 +1110,7 @@ export default function SettingsPage() {
       <Card className="settings-detail-card mt-6 p-6">
         <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
           <div className="flex items-start gap-4">
-            <div className="rounded-full border border-slate-200 p-3 text-ink"><Mail size={20} /></div>
+            <div className="rounded-xl bg-accent-soft p-3 text-accent"><Mail size={20} /></div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="font-bold text-ink">信用卡郵件自動記帳</h2>
@@ -1261,7 +1261,7 @@ export default function SettingsPage() {
                   <span className="font-semibold text-ink">{emailScreenshotProgress}%</span>
                 </div>
                 <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
-                  <div className="h-full rounded-full bg-lime transition-all" style={{ width: `${emailScreenshotProgress}%` }} />
+                  <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${emailScreenshotProgress}%` }} />
                 </div>
                 <p className="mt-2 text-xs text-slate-400">第一次使用需要下載繁體中文字庫，之後會使用瀏覽器快取。</p>
               </div>
@@ -1622,7 +1622,7 @@ export default function SettingsPage() {
         <div className="border-b border-slate-100 px-6 py-5">
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
             <div className="flex items-center gap-3">
-              <div className="rounded-full border border-slate-200 p-2.5 text-ink"><BookOpen size={18} /></div>
+              <div className="rounded-xl bg-accent-soft p-2.5 text-accent"><BookOpen size={18} /></div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="font-bold text-ink">自動分類</h2>
