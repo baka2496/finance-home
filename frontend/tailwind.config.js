@@ -8,8 +8,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Inter", '"Noto Sans TC"', "system-ui", "sans-serif"],
-        display: ['"Space Grotesk"', "Inter", '"Noto Sans TC"', "sans-serif"],
+        sans: ["Inter", '"Chiron Hei HK"', '"Noto Sans TC"', "system-ui", "sans-serif"],
+        display: ["Inter", '"Chiron Hei HK"', '"Noto Sans TC"', "sans-serif"],
       },
       colors: {
         ink: "#111111",
