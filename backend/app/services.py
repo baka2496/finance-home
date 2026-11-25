@@ -2753,6 +2753,7 @@ def _fetch_binance_spot_snapshot(
             )
 
         funding_balances: list[dict[str, Any]] = []
+        funding_complete = False
         try:
             funding_timestamp = int(time.time() * 1000) + server_time_offset
             funding_query = _binance_signed_query(api_secret, funding_timestamp)
@@ -2772,6 +2773,7 @@ def _fetch_binance_spot_snapshot(
                     )
                     > ZERO
                 ]
+                funding_complete = True
         except (ValueError, httpx.HTTPError):
             wallet_warnings.append(
                 "暫時無法讀取資金帳戶持倉明細，現貨與帳戶總值仍會正常同步"
@@ -3096,13 +3098,79 @@ def _fetch_binance_spot_snapshot(
         balances,
         prices,
         wallet_total_usdt,
-        funding_balances,
+        # ``None`` means the Funding request failed, not that it is empty.
+        funding_balances if funding_complete else None,
         equity_asset_map,
         equity_trades,
         um_positions,
         wallet_asset_balances,
         wallet_warnings,
     )
+
+
+BINANCE_STOCK_MISSING_SYNCS_TO_RETIRE = 2
+
+
+def _retire_sold_binance_stocks(
+    db: Session,
+    account: Account,
+    *,
+    authoritative: bool,
+    held_symbols: set[str],
+    binance_symbols: set[str],
+    seen_position_ids: set[int],
+    warnings: list[str],
+) -> None:
+    """Archive tokenized US stocks that Binance no longer holds.
+
+    Binance does not always report a SELL fill (for example after a convert),
+    so a sold stock used to stay on the investments page forever. When both the
+    all-wallet detail and the Funding wallet were read successfully and neither
+    contains the stock for two syncs in a row, it is treated as sold. One empty
+    reading is not enough, so a brief Binance hiccup cannot hide a holding.
+    Only stocks that came from Binance (seen in a wallet, its fills or its cost
+    checkpoints) are retired; a stock the user typed in by hand is left alone.
+    """
+    seen_key = _binance_setting_key(account.id, "stock_seen_symbols")
+    try:
+        seen_symbols = {str(item).upper() for item in json.loads(_get_setting_value(db, seen_key) or "[]")}
+    except (TypeError, ValueError, json.JSONDecodeError):
+        seen_symbols = set()
+    held = {str(item).upper() for item in held_symbols}
+    if held - seen_symbols:
+        seen_symbols |= held
+        _set_setting_value(db, seen_key, json.dumps(sorted(seen_symbols)))
+    managed = seen_symbols | {str(item).upper() for item in binance_symbols}
+    key = _binance_setting_key(account.id, "stock_missing_syncs")
+    try:
+        missing = {str(k): int(v) for k, v in json.loads(_get_setting_value(db, key) or "{}").items()}
+    except (TypeError, ValueError, json.JSONDecodeError, AttributeError):
+        missing = {}
+    if not authoritative:
+        return
+
+    positions = db.scalars(
+        select(Position).where(
+            Position.account_id == account.id,
+            Position.market == "US",
+            Position.archived.is_(False),
+        )
+    ).all()
+    next_missing: dict[str, int] = {}
+    for position in positions:
+        symbol = str(position.symbol or "").upper()
+        if symbol in held or symbol not in managed or decimal_value(position.quantity) <= 0:
+            continue
+        count = missing.get(symbol, 0) + 1
+        if count < BINANCE_STOCK_MISSING_SYNCS_TO_RETIRE:
+            next_missing[symbol] = count
+            continue
+        position.quantity = ZERO
+        position.archived = True
+        seen_position_ids.discard(position.id)
+        warnings.append(f"{symbol} 已不在幣安錢包中，已從持倉移除")
+    _set_setting_value(db, key, json.dumps(next_missing, sort_keys=True))
+    db.flush()
 
 
 def sync_binance_account(
@@ -3215,6 +3283,8 @@ def sync_binance_account(
         **BINANCE_TOKENIZED_EQUITY_ASSET_ALIASES,
         **equity_asset_map,
     }
+    funding_complete = funding_balances is not None
+    funding_balances = funding_balances or []
     usd_rate, usd_estimated = latest_fx_rate(db, "USD")
     if usd_estimated and usd_rate == ONE:
         raise ValueError("尚未設定美元匯率，請先到設定更新匯率")
@@ -3621,6 +3691,23 @@ def sync_binance_account(
             seen_position_ids.add(position.id)
         if include_cost_details and (matched_funding_cost or not checkpoint):
             stock_cost_basis[symbol] = _binance_stock_cost_checkpoint(db, position)
+
+    _retire_sold_binance_stocks(
+        db,
+        account,
+        authoritative=funding_complete and wallet_asset_balances is not None,
+        held_symbols={
+            *funding_stock_quantities,
+            *(
+                equity_asset_map[str(item.get("asset") or "").upper()]
+                for item in (wallet_asset_balances or [])
+                if str(item.get("asset") or "").upper() in equity_asset_map
+            ),
+        },
+        binance_symbols={*stock_cost_basis, *stock_history_symbols},
+        seen_position_ids=seen_position_ids,
+        warnings=warnings,
+    )
 
     if include_cost_details:
         # Baseline history-only stocks too, so a later light sync cannot move
