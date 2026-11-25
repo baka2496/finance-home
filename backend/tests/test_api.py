@@ -2771,3 +2771,72 @@ def test_email_screenshot_analysis_requires_manual_choice_when_bank_is_unknown(
     assert result["detected"] is False
     assert result["candidate_key"] is None
     assert result["card_last4"] == "9876"
+
+
+def test_binance_sold_stock_leaves_holdings_after_two_confirmed_empty_syncs(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    # 2026-11-25: the user sold MSTR on Binance, but the investments page kept
+    # showing it because no SELL fill was reported. Two authoritative syncs
+    # without the stock in any wallet now retire it; a failed Funding read never does.
+    monkeypatch.setenv("FINANCE_CREDENTIAL_SECRET", "test-credential-secret")
+    client.post(
+        "/api/fx/manual",
+        json={"currency": "USD", "rate_date": date.today().isoformat(), "rate_to_twd": 32},
+    )
+    account_id = client.post(
+        "/api/accounts",
+        json={
+            "name": "幣安交易所", "institution": "Binance", "account_type": "crypto",
+            "nature": "asset", "currency": "TWD", "is_liquid": True,
+            "opening_balance": 0, "opening_date": date.today().isoformat(),
+        },
+    ).json()["id"]
+    client.post(
+        "/api/positions",
+        json={
+            "account_id": account_id, "market": "US", "symbol": "MSTR", "name": "微策略",
+            "quantity": 4.3, "average_cost": 92.39, "currency": "USD", "manual_price": 94.64,
+        },
+    )
+
+    state: dict = {"funding": [{"asset": "MSTR", "free": "4.3", "locked": "0", "freeze": "0"}]}
+    monkeypatch.setattr(
+        services_module,
+        "_fetch_binance_spot_snapshot",
+        lambda _key, _secret, **_kwargs: (
+            [{"asset": "USDT", "free": "100", "locked": "0"}],
+            {},
+            services_module.Decimal("100"),
+            state["funding"],
+            {"MSTR": "MSTR"},
+            [],
+            [],
+            [{"asset": "USDT", "free": services_module.Decimal("100"), "locked": services_module.Decimal("0")}],
+            [],
+        ),
+    )
+    connected = client.post(
+        "/api/exchanges/binance/connect",
+        json={"account_id": account_id, "api_key": "read-only-key", "api_secret": "read-only-secret"},
+    )
+    assert connected.status_code == 200, connected.text
+
+    def sync_symbols() -> list[str]:
+        response = client.post(f"/api/exchanges/sync?account_id={account_id}&force=true")
+        assert response.status_code == 200, response.text
+        return [item["symbol"] for item in client.get("/api/positions").json()]
+
+    # A Funding request that failed proves nothing, however often it happens.
+    state["funding"] = None
+    assert sync_symbols() == ["MSTR"]
+    assert sync_symbols() == ["MSTR"]
+
+    # One empty reading is not enough either.
+    state["funding"] = []
+    assert sync_symbols() == ["MSTR"]
+    # The second confirmed empty reading retires the sold stock.
+    assert sync_symbols() == []
+    # And it stays gone.
+    assert sync_symbols() == []
