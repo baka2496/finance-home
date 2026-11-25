@@ -238,3 +238,25 @@ describe("amounts show the currency code small and grey", () => {
     expect(pageSources.find((p) => p.name === "AccountsPage.tsx")!.source).toContain("<Amount value={money(Math.abs(account.total_twd))} />");
   });
 });
+
+describe("the iPhone status bar", () => {
+  // 2026-11-25: the home-screen app showed a white status bar in dark mode. iOS reads the style
+  // only when the app is added to the home screen, so it is fixed to transparent and never switched.
+  const html = readFileSync(join(srcDir, "..", "index.html"), "utf8");
+  const theme = readFileSync(join(srcDir, "theme.ts"), "utf8");
+  const manifest = JSON.parse(readFileSync(join(srcDir, "..", "public", "manifest.webmanifest"), "utf8"));
+  const css = readFileSync(join(srcDir, "index.css"), "utf8");
+
+  it("is always black-translucent and nothing rewrites it", () => {
+    expect(html).toContain('<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />');
+    expect(html).not.toMatch(/status-bar-style"\]'\)[\s\S]*setAttribute/);
+    expect(theme).not.toMatch(/status-bar-style"\]'\)[\s\S]*setAttribute/);
+    expect(html).toContain("viewport-fit=cover");
+  });
+
+  it("the app header reaches under the status bar and the manifest is dark", () => {
+    expect(css).toMatch(/\.mobile-app-header \{\s*height: calc\(4rem \+ env\(safe-area-inset-top, 0px\)\);\s*padding-top: env\(safe-area-inset-top, 0px\);/);
+    expect(manifest.theme_color).toBe("#0d0d0e");
+    expect(manifest.background_color).toBe("#0d0d0e");
+  });
+});
