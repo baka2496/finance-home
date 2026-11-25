@@ -13,9 +13,8 @@ export function applyTheme(theme: AppTheme) {
 
   const themeColor = theme === "dark" ? "#0d0d0e" : "#f4f4f6";
   document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute("content", themeColor);
-  document
-    .querySelector<HTMLMetaElement>('meta[name="apple-mobile-web-app-status-bar-style"]')
-    ?.setAttribute("content", theme === "dark" ? "black-translucent" : "default");
+  // The iPhone status bar style is left alone (always "black-translucent" in index.html):
+  // iOS reads it only when the app is added to the home screen.
 }
 
 export function saveTheme(theme: AppTheme) {

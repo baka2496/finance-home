@@ -21,9 +21,8 @@
           document.documentElement.style.colorScheme = dark ? "dark" : "light";
           document.documentElement.style.backgroundColor = color;
           document.querySelector('meta[name="theme-color"]')?.setAttribute("content", color);
-          document
-            .querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')
-            ?.setAttribute("content", dark ? "black-translucent" : "default");
+          // The iPhone status bar stays "black-translucent" on purpose: iOS only reads it when the
+          // app is added to the home screen, so it cannot follow the light/dark switch.
         } catch {
           // Keep the light defaults if storage is unavailable.
         }
